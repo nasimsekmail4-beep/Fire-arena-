@@ -1,0 +1,2116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <title>FIRE ARENA - Official Esports Tournament APK</title>
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('ff_arena_active_session')) {
+          document.documentElement.classList.add('user-authenticated');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Rajdhani:ital,wght@0,700;0,800;1,700;1,800&family=Russo+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --primary: #F5B800; --primary-dark: #C89200; --secondary: #FFD600; --accent-yellow: #FFEE58;
+      --white: #FFFFFF; --bg-light: #FFFDF4; --card-bg: #FFFFFF; --text-dark: #141418;
+      --text-muted: #6E6E77; --border-color: #FCE694;
+      --gradient-main: linear-gradient(135deg, #FFD600 0%, #F5B800 100%);
+      --gradient-card-bar: linear-gradient(90deg, #F5B700 0%, #FFEA00 50%, #F5B700 100%);
+      --shadow-sm: 0 4px 12px rgba(245, 184, 0, 0.14); --shadow-md: 0 8px 24px rgba(245, 184, 0, 0.25);
+    }
+
+    /* THEME 1: BLACK THEME (DARK MODE) */
+    body.theme-black {
+      --primary: #FFD600; --primary-dark: #F5B800; --secondary: #FFEE58;
+      --white: #1C1C24; --bg-light: #101014; --card-bg: #1C1C24;
+      --text-dark: #F5F5F7; --text-muted: #A0A0AB; --border-color: #2E2E3A;
+      --gradient-main: linear-gradient(135deg, #FFD600 0%, #E6A100 100%);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.45); --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+    body.theme-black .top-header, body.theme-black .bottom-nav { border-color: #2E2E3A; }
+    body.theme-black .input-box, body.theme-black .match-stats, body.theme-black .participant-item { background: #14141A !important; border-color: #2E2E3A !important; }
+    body.theme-black .wallet-pill, body.theme-black .notif-bell-btn, body.theme-black .slot-info-banner, body.theme-black .code-pill, body.theme-black .timer-badge-box { background: #242430 !important; border-color: #FFD600 !important; }
+    body.theme-black .btn-primary, body.theme-black .btn-join, body.theme-black .page-header, body.theme-black .wallet-hero, body.theme-black .sub-tab.active, body.theme-black .auth-tab.active, body.theme-black .slot-badge, body.theme-black .match-id-tag { color: #101014 !important; }
+    body.theme-black .back-btn { background: #101014 !important; color: #FFD600 !important; }
+
+    /* THEME 2: WHITE & YELLOW THEME (DEFAULT) */
+    body.theme-white_yellow {
+      --primary: #F5B800; --primary-dark: #C89200; --secondary: #FFD600;
+      --white: #FFFFFF; --bg-light: #FFFDF4; --card-bg: #FFFFFF;
+      --text-dark: #141418; --text-muted: #6E6E77; --border-color: #FCE694;
+      --gradient-main: linear-gradient(135deg, #FFD600 0%, #F5B800 100%);
+    }
+
+    /* THEME 3: ORANGE & WHITE THEME */
+    body.theme-orange_white {
+      --primary: #FF6600; --primary-dark: #CC4E00; --secondary: #FF8533;
+      --white: #FFFFFF; --bg-light: #FFF8F4; --card-bg: #FFFFFF;
+      --text-dark: #1A1412; --text-muted: #786B65; --border-color: #FFD0B0;
+      --gradient-main: linear-gradient(135deg, #FF8533 0%, #FF5500 100%);
+      --gradient-card-bar: linear-gradient(90deg, #FF5500 0%, #FF8533 50%, #FF5500 100%);
+      --shadow-sm: 0 4px 12px rgba(255, 102, 0, 0.15); --shadow-md: 0 8px 24px rgba(255, 102, 0, 0.28);
+    }
+    body.theme-orange_white .btn-primary, body.theme-orange_white .btn-join, body.theme-orange_white .page-header, body.theme-orange_white .wallet-hero, body.theme-orange_white .sub-tab.active, body.theme-orange_white .auth-tab.active, body.theme-orange_white .slot-badge, body.theme-orange_white .match-id-tag, body.theme-orange_white .esports-card-footer span { color: #FFFFFF !important; }
+    body.theme-orange_white .top-header, body.theme-orange_white .bottom-nav { border-color: #FFD0B0; }
+    body.theme-orange_white .wallet-pill, body.theme-orange_white .notif-bell-btn, body.theme-orange_white .slot-info-banner, body.theme-orange_white .code-pill, body.theme-orange_white .timer-badge-box { background: #FFF0E6 !important; border-color: #FF6600 !important; }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; touch-action: pan-x pan-y; }
+    html, body { width: 100%; height: 100%; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; transition: background-color 0.25s, color 0.25s; }
+    input, select, textarea { user-select: text; -webkit-user-select: text; font-size: 16px !important; }
+    html.user-authenticated #authScreen { display: none !important; }
+    .app-wrapper { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg-light); position: relative; padding-bottom: 85px; box-shadow: 0 0 30px rgba(0,0,0,0.06); }
+
+    /* LIVE APK IN-APP NOTIFICATION BANNER */
+    #livePushBanner {
+      position: fixed; top: -150px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 24px); max-width: 456px; background: #141418; color: #FFFFFF;
+      border: 2px solid var(--primary); border-radius: 16px; padding: 12px 14px;
+      z-index: 5000; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #livePushBanner.show-banner { top: 14px; }
+    .push-banner-left { display: flex; align-items: center; gap: 12px; }
+    .push-banner-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--gradient-main); color: #141418; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .push-banner-text h4 { font-size: 13.5px; font-weight: 800; color: #FFD600; line-height: 1.2; }
+    .push-banner-text p { font-size: 11.5px; color: #E0E0E6; margin-top: 2px; line-height: 1.35; }
+    .push-banner-close { background: rgba(255,255,255,0.12); border: none; color: #FFF; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+
+    /* AUTH SCREEN */
+    #authScreen { position: fixed; inset: 0; max-width: 480px; margin: 0 auto; background: var(--white); z-index: 2000; display: flex; flex-direction: column; justify-content: flex-start; padding: 24px 20px 36px; overflow-y: auto; }
+    .auth-header { text-align: center; margin: 8px 0 18px; }
+    .auth-logo { width: 72px; height: 72px; border-radius: 22px; background: var(--gradient-main); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: var(--text-dark); font-size: 34px; box-shadow: var(--shadow-md); border: 2px solid #FFF59D; }
+    .auth-header h1 { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 800; color: var(--text-dark); letter-spacing: 1px; }
+    .auth-header p { font-size: 12px; color: var(--text-muted); }
+    .auth-tabs { display: flex; background: var(--bg-light); border-radius: 14px; padding: 5px; margin-bottom: 18px; border: 1px solid var(--border-color); }
+    .auth-tab { flex: 1; text-align: center; padding: 10px; font-weight: 700; font-size: 13.5px; border-radius: 10px; color: var(--text-muted); cursor: pointer; transition: 0.25s; }
+    .auth-tab.active { background: var(--gradient-main); color: var(--text-dark); box-shadow: var(--shadow-sm); }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { margin-bottom: 13px; }
+    .form-group label { display: block; font-size: 11.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; }
+    .input-box { display: flex; align-items: center; background: #FFFDF7; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 0 12px; transition: 0.2s; }
+    .input-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(245, 184, 0, 0.18); }
+    .input-box i { color: var(--primary-dark); font-size: 15px; margin-right: 9px; }
+    .input-box input, .input-box select, .input-box textarea { width: 100%; border: none; background: transparent; padding: 12px 0; outline: none; color: var(--text-dark); font-weight: 500; }
+    .btn-primary { width: 100%; background: var(--gradient-main); color: var(--text-dark); border: 1.5px solid var(--primary-dark); padding: 14px; border-radius: 14px; font-size: 14.5px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-md); transition: transform 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* TOP HEADER */
+    .top-header { position: sticky; top: 0; z-index: 100; background: var(--white); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--border-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .header-avatar-wrap { position: relative; width: 42px; height: 42px; border-radius: 50%; padding: 2px; background: var(--gradient-main); cursor: pointer; }
+    .header-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--white); }
+    .header-avatar-badge { position: absolute; bottom: -2px; right: -2px; background: var(--secondary); color: #141418; width: 16px; height: 16px; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--white); }
+    .brand-info h2 { font-family: 'Rajdhani', sans-serif; font-size: 21px; font-weight: 800; color: var(--text-dark); line-height: 1.1; }
+    .brand-info h2 span { color: var(--primary-dark); }
+    .brand-info p { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .header-right-actions { display: flex; align-items: center; gap: 8px; }
+    .notif-bell-btn { position: relative; width: 36px; height: 36px; border-radius: 50%; background: #FFFBE6; border: 1.5px solid var(--primary); display: flex; align-items: center; justify-content: center; color: var(--text-dark); font-size: 15px; cursor: pointer; }
+    .notif-dot { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: #2E7D32; border: 1.5px solid var(--white); }
+    .wallet-pill { background: #FFFBE6; border: 1.5px solid var(--primary); border-radius: 30px; padding: 6px 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .wallet-pill i { color: var(--primary-dark); font-size: 14px; }
+    .wallet-pill span { font-weight: 800; font-size: 13px; color: var(--text-dark); }
+    .wallet-pill .plus-btn { background: var(--gradient-main); color: #141418; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+
+    /* BANNERS */
+    .banner-section { padding: 14px 14px 6px; }
+    .slider-container { position: relative; width: 100%; height: 154px; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow-md); border: 2px solid var(--primary); }
+    .slider-track { display: flex; width: 500%; height: 100%; transition: transform 0.55s cubic-bezier(0.25, 1, 0.5, 1); }
+    .slide-item { width: 20%; height: 100%; padding: 16px 18px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; color: #141418; cursor: pointer; background-size: cover; background-position: center; }
+    .slide-1 { background: linear-gradient(135deg, #FFE000 0%, #F5B000 100%); }
+    .slide-2 { background: linear-gradient(135deg, #FFF3B0 0%, #FFD000 100%); }
+    .slide-3 { background: linear-gradient(135deg, #FFCC00 0%, #FFEE55 100%); }
+    .slide-4 { background: linear-gradient(135deg, #FFE650 0%, #F0A800 100%); }
+    .slide-5 { background: linear-gradient(135deg, #FFD500 0%, #FFF8C9 100%); }
+    .slide-tag { display: inline-block; background: #FFFFFF; color: #141418; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; width: fit-content; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+    .slide-item h3 { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 800; line-height: 1.1; margin-top: 4px; color: #111111; }
+    .slide-item p { font-size: 11.5px; font-weight: 600; color: #2B2B2B; max-width: 80%; }
+    .slide-btn { background: #141418; color: #FFD600; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; width: fit-content; display: inline-flex; align-items: center; gap: 6px; }
+    .slide-bg-icon { position: absolute; right: -8px; bottom: -14px; font-size: 105px; color: rgba(255, 255, 255, 0.45); transform: rotate(-15deg); pointer-events: none; }
+    .slider-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+    .dot { width: 7px; height: 7px; border-radius: 10px; background: var(--border-color); transition: 0.3s; cursor: pointer; }
+    .dot.active { width: 22px; background: var(--primary); }
+
+    .section-title { padding: 12px 14px 10px; display: flex; align-items: center; justify-content: space-between; }
+    .section-title h3 { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .section-title h3 i { color: var(--primary-dark); }
+    .section-title span { font-size: 11px; font-weight: 700; color: #141418; background: var(--secondary); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--primary-dark); }
+    .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 12px 22px; }
+    .esports-card { background: #14120A; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary); box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; transition: transform 0.16s ease; position: relative; }
+    .esports-card:active { transform: scale(0.95); }
+    .esports-card-art { position: relative; width: 100%; aspect-ratio: 1 / 1.08; background: radial-gradient(circle at 50% 42%, #FFF3A1 0%, #FFD000 42%, #8F6800 85%, #2B1F00 100%); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .esports-card-art::before { content: ''; position: absolute; inset: 3px; border: 1.5px solid rgba(255, 238, 88, 0.85); border-radius: 6px; pointer-events: none; z-index: 3; }
+    .card-corner-crest { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle, #FFF59D 0%, #F5B800 100%); border: 1px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #141418; z-index: 4; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
+    .char-svg { width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1; }
+    .art-Slant-Banner { position: absolute; bottom: 0; left: 0; right: 0; height: 31%; background: linear-gradient(180deg, rgba(15,12,4,0.82) 0%, #0E0B02 100%); clip-path: polygon(0 18%, 100% 0%, 100% 100%, 0% 100%); border-top: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; z-index: 4; padding: 4px 3px 0; }
+    .art-Slant-Banner .slant-text { font-family: 'Russo One', 'Rajdhani', sans-serif; font-style: italic; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; line-height: 1; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.9); white-space: nowrap; }
+    .slant-text .t-yellow { color: #FFD600; }
+    .slant-text .t-white { color: #FFFFFF; }
+    .esports-card-footer { background: var(--gradient-card-bar); padding: 6px 4px; text-align: center; border-top: 1.5px solid #FFF9C4; position: relative; z-index: 5; }
+    .esports-card-footer span { display: block; font-family: 'Poppins', sans-serif; font-size: 10.5px; font-weight: 800; color: #0D0D0D; text-transform: uppercase; letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* SERVER OFFLINE / MATCH HIDE REASON BOX */
+    .server-offline-box { margin: 12px 14px 24px; background: #FFF5F5; border: 2px dashed #D32F2F; border-radius: 18px; padding: 26px 18px; text-align: center; box-shadow: 0 6px 20px rgba(211, 47, 47, 0.12); }
+    .server-offline-box i { font-size: 38px; color: #D32F2F; margin-bottom: 10px; }
+    .server-offline-box h4 { font-size: 17px; font-weight: 800; color: #B71C1C; text-transform: uppercase; }
+    .server-offline-box .reason-badge { display: inline-block; margin-top: 10px; background: #FFEBEE; color: #C62828; border: 1.5px solid #EF9A9A; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 700; line-height: 1.5; width: 100%; }
+
+    .matches-container { padding: 12px 14px; }
+    .match-card { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 18px; padding: 15px; margin-bottom: 14px; box-shadow: var(--shadow-sm); cursor: pointer; }
+    .match-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; margin-bottom: 12px; }
+    .match-title-wrap { display: flex; align-items: center; gap: 10px; }
+    .match-badge-icon { width: 40px; height: 40px; border-radius: 10px; background: #FFF9D6; color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid var(--primary); overflow: hidden; }
+    .match-badge-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .match-title-wrap h4 { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+    .match-title-wrap span { font-size: 11px; color: var(--text-muted); }
+    .match-id-tag { background: var(--gradient-main); color: var(--text-dark); font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 20px; }
+    .match-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #FFFDF0; border: 1px solid var(--border-color); padding: 10px; border-radius: 12px; text-align: center; margin-bottom: 12px; }
+    .stat-box span { display: block; font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    .stat-box strong { font-size: 14px; color: var(--text-dark); font-weight: 800; }
+    .match-progress-wrap { margin-bottom: 12px; }
+    .progress-bar-bg { width: 100%; height: 7px; background: var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
+    .progress-bar-fill { height: 100%; background: var(--gradient-main); border-radius: 10px; }
+    .progress-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .match-bottom { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .map-pill { font-size: 11px; font-weight: 700; color: var(--text-dark); background: var(--bg-light); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .btn-join { background: var(--gradient-main); color: var(--text-dark); border: 1px solid var(--primary-dark); padding: 9px 18px; border-radius: 10px; font-size: 12.5px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .btn-join.joined { background: #E8E8E8 !important; color: #616161 !important; border-color: #CCCCCC !important; box-shadow: none; }
+    .btn-result { background: #141418; color: #FFD600; border: 1px solid var(--primary); padding: 9px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+    .slot-info-banner { background: #FFF9D2; border: 1.5px solid var(--primary); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .slot-legend { display: flex; gap: 14px; margin-bottom: 12px; font-size: 11.5px; font-weight: 700; }
+    .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 5px; vertical-align: middle; }
+    .slots-grid-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 20px; }
+    .slots-grid-container.two-slots { grid-template-columns: repeat(2, 1fr); }
+    .slot-item-box { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 12px 6px; text-align: center; cursor: pointer; transition: 0.18s; box-shadow: var(--shadow-sm); }
+    .slot-item-box strong { display: block; font-size: 13px; font-weight: 800; color: var(--text-dark); }
+    .slot-item-box span { display: block; font-size: 10px; font-weight: 600; color: #2E7D32; margin-top: 2px; }
+    .slot-item-box.selected { background: var(--gradient-main); border-color: #141418; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .slot-item-box.selected strong, .slot-item-box.selected span { color: #141418; font-weight: 800; }
+    .slot-item-box.booked { background: #F1F1F4; border-color: #D8D8E0; cursor: not-allowed; opacity: 0.75; box-shadow: none; }
+    .slot-item-box.booked strong { color: #757575; }
+    .slot-item-box.booked span { color: #D32F2F; }
+
+    .details-card-box { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 18px; padding: 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .details-card-box h4 { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+    .details-card-box h4 i { color: var(--primary-dark); }
+    .participant-item { display: flex; align-items: center; justify-content: space-between; background: #FFFDF6; border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 11px; margin-bottom: 8px; }
+    .participant-left { display: flex; align-items: center; gap: 10px; }
+    .slot-badge { background: var(--gradient-main); color: var(--text-dark); font-weight: 800; font-size: 11px; padding: 4px 8px; border-radius: 8px; min-width: 58px; text-align: center; }
+
+    .copy-bar-row { background: var(--white); border: 1.5px solid var(--primary-dark); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .copy-bar-row:last-child { margin-bottom: 0; }
+    .copy-bar-row span { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .copy-bar-row strong { font-size: 14px; font-weight: 800; color: var(--text-dark); margin-left: 6px; }
+    .copy-pill-btn { background: var(--gradient-main); color: #141418; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
+
+    .cs-issue-card { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 16px; padding: 15px 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); transition: 0.18s; }
+    .cs-card-left { display: flex; align-items: center; gap: 14px; }
+    .cs-card-icon { width: 46px; height: 46px; border-radius: 13px; background: var(--gradient-main); color: #141418; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1.5px solid #141418; flex-shrink: 0; }
+    .cs-card-left h4 { font-size: 14.5px; font-weight: 800; color: var(--text-dark); }
+    .cs-card-left p { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .channel-btn-card { background: var(--white); border: 2px solid var(--border-color); border-radius: 18px; padding: 18px 16px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow-sm); }
+    .channel-btn-card.whatsapp { border-color: #25D366; }
+    .channel-btn-card.telegram { border-color: #0088CC; }
+    .channel-icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #FFFFFF; flex-shrink: 0; }
+
+    .sub-tabs { display: flex; background: var(--white); margin: 14px 14px 8px; padding: 5px; border-radius: 14px; border: 1.5px solid var(--border-color); }
+    .sub-tab { flex: 1; text-align: center; padding: 9px 4px; font-size: 12px; font-weight: 700; color: var(--text-muted); border-radius: 10px; cursor: pointer; transition: 0.25s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .sub-tab.active { background: var(--gradient-main); color: var(--text-dark); box-shadow: var(--shadow-sm); }
+    .sub-tab-badge { background: #141418; color: #FFD600; font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 8px; }
+
+    .podium-wrap { display: flex; align-items: flex-end; justify-content: center; gap: 12px; padding: 22px 14px 16px; }
+    .podium-item { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 16px; padding: 12px 10px; text-align: center; width: 30%; box-shadow: var(--shadow-sm); }
+    .podium-item.rank-1 { width: 35%; padding: 18px 10px; border: 2px solid var(--primary); box-shadow: var(--shadow-md); }
+    .crown-icon { color: var(--primary-dark); font-size: 20px; margin-bottom: 4px; }
+    .podium-avatar { width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 8px; border: 2.5px solid var(--primary); display: flex; align-items: center; justify-content: center; background: var(--bg-light); color: var(--text-dark); font-weight: 800; font-size: 18px; }
+    .podium-item h5 { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .podium-item span { font-size: 11px; font-weight: 800; color: var(--primary-dark); }
+    .leader-list { padding: 8px 14px; }
+    .leader-row { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .leader-left { display: flex; align-items: center; gap: 12px; }
+    .rank-num { width: 28px; height: 28px; border-radius: 8px; background: var(--secondary); color: #141418; font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+
+    .wallet-hero { margin: 14px; background: var(--gradient-main); border: 2px solid var(--primary-dark); border-radius: 22px; padding: 22px 20px; color: var(--text-dark); box-shadow: var(--shadow-md); position: relative; overflow: hidden; }
+    .wallet-hero p { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; }
+    .wallet-hero h1 { font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 800; margin: 4px 0 16px; }
+    .wallet-actions { display: flex; gap: 12px; }
+    .wallet-btn { flex: 1; background: var(--white); color: var(--text-dark); border: 1.5px solid #141418; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+    .tx-list { padding: 0 14px; }
+    .tx-item { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .tx-left { display: flex; align-items: center; gap: 12px; }
+    .tx-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-light); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid var(--border-color); }
+    .tx-info h5 { font-size: 13px; font-weight: 700; }
+    .tx-info span { font-size: 11px; color: var(--text-muted); }
+    .tx-amount { font-weight: 800; font-size: 13.5px; }
+    .tx-amount.credit { color: #2E7D32; }
+    .tx-amount.debit { color: #B78103; }
+    .tx-amount.pending { color: #D97706; font-size: 12px; }
+
+    .profile-card { margin: 14px; background: var(--white); border: 1.5px solid var(--border-color); border-radius: 22px; padding: 22px 18px; text-align: center; box-shadow: var(--shadow-sm); position: relative; }
+    .profile-avatar-box { position: relative; width: 96px; height: 96px; margin: 0 auto 12px; border-radius: 50%; padding: 3px; background: var(--gradient-main); cursor: pointer; box-shadow: var(--shadow-md); }
+    .profile-avatar-box img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--white); }
+    .camera-badge { position: absolute; bottom: 2px; right: 2px; width: 28px; height: 28px; border-radius: 50%; background: var(--secondary); color: #141418; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 2px solid var(--white); }
+    .profile-card h3 { font-size: 18px; font-weight: 800; color: var(--text-dark); }
+    .profile-uid { display: inline-block; background: var(--bg-light); color: var(--text-dark); border: 1px solid var(--primary); font-size: 11.5px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-top: 4px; }
+    .profile-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+    .p-stat h4 { font-size: 17px; font-weight: 800; color: var(--primary-dark); }
+    .p-stat span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .profile-menu { padding: 0 14px 20px; }
+    .menu-item { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 14px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; cursor: pointer; }
+    .menu-left { display: flex; align-items: center; gap: 12px; }
+    .menu-icon { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-light); color: var(--primary-dark); display: flex; align-items: center; justify-content: center; font-size: 16px; border: 1px solid var(--border-color); }
+    .menu-left span { font-size: 13.5px; font-weight: 600; color: var(--text-dark); }
+
+    .full-page { position: fixed; inset: 0; max-width: 480px; margin: 0 auto; background: var(--bg-light); z-index: 1500; display: none; flex-direction: column; overflow-y: auto; }
+    .full-page.open { display: flex; }
+    .page-header { position: sticky; top: 0; background: var(--gradient-main); color: var(--text-dark); padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; z-index: 10; box-shadow: var(--shadow-sm); }
+    .page-header-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { width: 36px; height: 36px; border-radius: 10px; background: var(--white); border: none; color: var(--text-dark); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .page-header h3 { font-family: 'Rajdhani', sans-serif; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; }
+    .page-body { padding: 18px 16px 36px; flex: 1; }
+
+    .amount-chips-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin: 14px 0 20px; }
+    .amount-chip { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 10px 4px; text-align: center; font-weight: 700; font-size: 13px; color: var(--text-dark); cursor: pointer; }
+    .amount-chip.active { background: var(--gradient-main); color: #141418; border-color: var(--primary-dark); }
+
+    .qr-payment-card { background: var(--white); border: 2px solid var(--primary); border-radius: 22px; padding: 20px 18px; text-align: center; box-shadow: var(--shadow-md); }
+    .timer-badge-box { background: #FFF9D2; border: 1.5px solid var(--primary); border-radius: 16px; padding: 12px 16px; margin-bottom: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .timer-badge-box span { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .timer-digits { font-family: 'Rajdhani', sans-serif; font-size: 34px; font-weight: 800; color: #D32F2F; line-height: 1.1; margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+    .qr-box-frame { width: 190px; height: 190px; margin: 14px auto; background: #FFFFFF; border: 3px solid var(--primary); border-radius: 18px; padding: 12px; display: flex; align-items: center; justify-content: center; }
+    .qr-box-frame svg, .qr-box-frame img { width: 100%; height: 100%; object-fit: contain; }
+    .code-pill { background: #FFF9D2; border: 1.5px solid var(--primary); padding: 12px 14px; border-radius: 12px; font-weight: 800; font-size: 14px; color: var(--text-dark); margin: 12px 0 16px; display: flex; align-items: center; justify-content: space-between; }
+    .waiting-status-box { display: none; background: var(--bg-light); border: 1.5px dashed var(--primary-dark); border-radius: 14px; padding: 14px 12px; align-items: center; justify-content: center; gap: 10px; font-size: 12.5px; font-weight: 700; color: var(--text-dark); margin-top: 8px; }
+    .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); flex-shrink: 0; animation: pulseAnim 1s infinite alternate; }
+    @keyframes pulseAnim { from { transform: scale(0.8); opacity: 0.5; } to { transform: scale(1.3); opacity: 1; } }
+
+    .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 18px; }
+    .method-card { background: var(--white); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 12px 8px; text-align: center; cursor: pointer; }
+    .method-card i { font-size: 22px; color: var(--primary-dark); margin-bottom: 6px; display: block; }
+    .method-card span { font-size: 12px; font-weight: 700; color: var(--text-dark); }
+    .method-card.selected { border-color: var(--primary-dark); box-shadow: 0 0 0 2px rgba(245, 184, 0, 0.25); }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 480px; margin: 0 auto; background: var(--white); border-top: 2px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; padding: 8px 6px 10px; z-index: 1000; box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+    .nav-item i { font-size: 19px; transition: 0.2s; }
+    .nav-item span { font-size: 10.5px; font-weight: 700; }
+    .nav-item.active { color: var(--primary-dark); }
+    .nav-item.active i { transform: translateY(-2px); }
+    .nav-item.center-nav .center-circle { width: 46px; height: 46px; border-radius: 50%; background: var(--gradient-main); color: #141418; display: flex; align-items: center; justify-content: center; margin-top: -22px; box-shadow: var(--shadow-md); border: 3px solid var(--white); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .popup-box { background: var(--white); width: 100%; max-width: 340px; border-radius: 22px; padding: 26px 20px; text-align: center; border: 2px solid var(--primary); box-shadow: 0 15px 35px rgba(0,0,0,0.3); animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .spinner { width: 52px; height: 52px; border: 5px solid var(--border-color); border-top-color: var(--primary-dark); border-radius: 50%; margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .popup-icon-success { width: 66px; height: 66px; border-radius: 50%; background: var(--gradient-main); color: #141418; font-size: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: var(--shadow-md); }
+    .tab-view { display: none; }
+    .tab-view.active { display: block; }
+    #toastBox { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #141418; color: #FFD600; padding: 10px 18px; border-radius: 30px; font-size: 12.5px; font-weight: 700; z-index: 4500; display: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); border: 1.5px solid #FFD600; white-space: nowrap; }
+  </style>
+</head>
+<body class="theme-white_yellow">
+
+  <div id="toastBox"></div>
+
+  <!-- LIVE APK IN-APP PUSH NOTIFICATION BANNER -->
+  <div id="livePushBanner">
+    <div class="push-banner-left">
+      <div class="push-banner-icon"><i class="fa-solid fa-bell"></i></div>
+      <div class="push-banner-text">
+        <h4 id="pushBannerTitle">FIRE ARENA</h4>
+        <p id="pushBannerBody">New Tournament Update!</p>
+      </div>
+    </div>
+    <button class="push-banner-close" onclick="closeLivePushBanner()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <input type="file" id="galleryInput" accept="image/*" style="display: none;">
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen">
+    <div class="auth-header">
+      <div class="auth-logo"><i class="fa-solid fa-trophy"></i></div>
+      <h1>FIRE ARENA</h1>
+      <p>Official Free Fire Esports Tournament App</p>
+    </div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">LOGIN</div>
+      <div class="auth-tab" id="tabRegBtn" onclick="switchAuthTab('register')">REGISTER</div>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+      <div class="form-group">
+        <label>Username / Email / Phone Number</label>
+        <div class="input-box"><i class="fa-solid fa-user"></i><input type="text" id="loginIdentifier" placeholder="Enter Username, Email or Phone" autocomplete="username" required></div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="loginPassword" placeholder="Enter Your Password" autocomplete="current-password" required></div>
+      </div>
+      <button type="submit" class="btn-primary"><i class="fa-solid fa-right-to-bracket"></i> LOGIN TO ACCOUNT</button>
+    </form>
+
+    <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)" novalidate>
+      <div class="form-row-2">
+        <div class="form-group"><label>First Name</label><div class="input-box"><i class="fa-solid fa-user"></i><input type="text" id="regFirstName" placeholder="First Name" required></div></div>
+        <div class="form-group"><label>Last Name</label><div class="input-box"><i class="fa-solid fa-user-tag"></i><input type="text" id="regLastName" placeholder="Last Name" required></div></div>
+      </div>
+      <div class="form-group"><label>Username</label><div class="input-box"><i class="fa-solid fa-at"></i><input type="text" id="regUsername" placeholder="Create Username" required></div></div>
+      <div class="form-group"><label>Phone Number</label><div class="input-box"><i class="fa-solid fa-phone"></i><input type="tel" id="regPhone" placeholder="10 Digit Phone Number" maxlength="15" required></div></div>
+      <div class="form-group"><label>Email Address</label><div class="input-box"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="Gmail Address" required></div></div>
+      <div class="form-group"><label>Referral Code (Optional)</label><div class="input-box"><i class="fa-solid fa-gift"></i><input type="text" id="regReferral" placeholder="Referral Code"></div></div>
+      <div class="form-group"><label>Password (Min 6 Characters)</label><div class="input-box"><i class="fa-solid fa-lock"></i><input type="password" id="regPassword" placeholder="Create Password" minlength="6" required></div></div>
+      <button type="submit" class="btn-primary"><i class="fa-solid fa-user-plus"></i> COMPLETE REGISTRATION</button>
+    </form>
+  </div>
+
+  <!-- MAIN APP WRAPPER -->
+  <div class="app-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <div class="header-avatar-wrap" onclick="triggerGalleryPicker()">
+          <img id="headerAvatarImg" src="" alt="Profile">
+          <div class="header-avatar-badge"><i class="fa-solid fa-camera"></i></div>
+        </div>
+        <div class="brand-info">
+          <h2>FIRE <span>ARENA</span></h2>
+          <p id="headerWelcomeName">Welcome Player</p>
+        </div>
+      </div>
+      <div class="header-right-actions">
+        <div class="notif-bell-btn" onclick="triggerInstantNotifEnable()" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-dot" id="notifBadgeDot"></span>
+        </div>
+        <div class="wallet-pill" onclick="openDepositPage()">
+          <i class="fa-solid fa-wallet"></i>
+          <span>₹<span id="headerBalance">0</span></span>
+          <div class="plus-btn"><i class="fa-solid fa-plus"></i></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- TAB 1: HOME -->
+    <main id="viewHome" class="tab-view active">
+      <section class="banner-section">
+        <div class="slider-container">
+          <div class="slider-track" id="bannerTrack">
+            <div class="slide-item slide-1" id="slideBanner1" onclick="openOfficialYouTube()"><div><span class="slide-tag">OFFICIAL CHANNEL</span><h3>WATCH LIVE TOURNAMENTS</h3><p>Subscribe YouTube For Room ID & Giveaways!</p></div><div class="slide-btn"><i class="fa-brands fa-youtube"></i> WATCH ON YOUTUBE →</div><i class="fa-brands fa-youtube slide-bg-icon"></i></div>
+            <div class="slide-item slide-2" id="slideBanner2" onclick="openOfficialYouTube()"><div><span class="slide-tag">ROOM ID</span><h3>HOW TO JOIN CUSTOM ROOMS</h3><p>Watch full tutorial on getting Room ID & Password!</p></div><div class="slide-btn"><i class="fa-solid fa-circle-play"></i> WATCH GUIDE →</div><i class="fa-solid fa-key slide-bg-icon"></i></div>
+            <div class="slide-item slide-3" id="slideBanner3" onclick="openOfficialYouTube()"><div><span class="slide-tag">MEGA TOURNAMENT</span><h3>BR PER KILL CHAMPIONSHIP</h3><p>Win ₹20 Per Kill + ₹500 Booyah Prize Pool!</p></div><div class="slide-btn"><i class="fa-solid fa-trophy"></i> JOIN CHANNEL →</div><i class="fa-solid fa-trophy slide-bg-icon"></i></div>
+            <div class="slide-item slide-4" id="slideBanner4" onclick="openOfficialYouTube()"><div><span class="slide-tag">HEADSHOT SPECIAL</span><h3>CS 1V1 & LW HEADSHOT PRO</h3><p>Show your one-tap skills & double your entry fee!</p></div><div class="slide-btn"><i class="fa-solid fa-crosshairs"></i> VIEW HIGHLIGHTS →</div><i class="fa-solid fa-crosshairs slide-bg-icon"></i></div>
+            <div class="slide-item slide-5" id="slideBanner5" onclick="openOfficialYouTube()"><div><span class="slide-tag">LOW ENTRY 10 RS</span><h3>LW 10 RS ONLY MATCHES</h3><p>Play daily custom matches starting with ₹10!</p></div><div class="slide-btn"><i class="fa-solid fa-bolt"></i> VISIT CHANNEL →</div><i class="fa-solid fa-bolt slide-bg-icon"></i></div>
+          </div>
+        </div>
+        <div class="slider-dots" id="sliderDots">
+          <div class="dot active" onclick="goToSlide(0)"></div><div class="dot" onclick="goToSlide(1)"></div><div class="dot" onclick="goToSlide(2)"></div><div class="dot" onclick="goToSlide(3)"></div><div class="dot" onclick="goToSlide(4)"></div>
+        </div>
+      </section>
+
+      <div class="section-title">
+        <h3><i class="fa-solid fa-gamepad"></i> TOURNAMENTS</h3>
+        <span id="tournamentModeBadge">13 Modes</span>
+      </div>
+
+      <!-- SERVER OFFLINE / MATCH HIDE REASON DISPLAY BOX -->
+      <div id="homeServerOfflineNotice" class="server-offline-box" style="display:none;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h4>SERVER / MATCHES CURRENTLY PAUSED</h4>
+        <div class="reason-badge" id="maintenanceReasonText">Server is under maintenance. Please check back soon!</div>
+      </div>
+
+      <div class="category-grid" id="categoryGrid"></div>
+    </main>
+
+    <!-- TAB 2: MY MATCHES (ONGOING, UPCOMING, COMPLETED) -->
+    <main id="viewMyMatches" class="tab-view">
+      <div class="sub-tabs">
+        <div class="sub-tab" id="subTabOngoing" onclick="switchMatchSubTab('Ongoing', this)">
+          Ongoing <span class="sub-tab-badge" id="countOngoing">0</span>
+        </div>
+        <div class="sub-tab active" id="subTabUpcoming" onclick="switchMatchSubTab('Upcoming', this)">
+          Upcoming <span class="sub-tab-badge" id="countUpcoming">0</span>
+        </div>
+        <div class="sub-tab" id="subTabCompleted" onclick="switchMatchSubTab('Completed', this)">
+          Completed <span class="sub-tab-badge" id="countCompleted">0</span>
+        </div>
+      </div>
+      <div class="matches-container" id="myMatchesList"></div>
+    </main>
+
+    <!-- TAB 3: LEADERBOARD -->
+    <main id="viewLeaderboard" class="tab-view">
+      <div class="podium-wrap" id="podiumContainer"></div>
+      <div class="section-title"><h3><i class="fa-solid fa-ranking-star"></i> TOP ESPORTS PLAYERS</h3><span>Live Rank</span></div>
+      <div class="leader-list" id="leaderList"></div>
+    </main>
+
+    <!-- TAB 4: WALLET -->
+    <main id="viewWallet" class="tab-view">
+      <div class="wallet-hero">
+        <p>Total Available Balance</p>
+        <h1>₹<span id="walletMainBalance">0</span></h1>
+        <div class="wallet-actions">
+          <button class="wallet-btn" onclick="openDepositPage()"><i class="fa-solid fa-circle-plus"></i> DEPOSIT</button>
+          <button class="wallet-btn" onclick="openWithdrawPage()"><i class="fa-solid fa-building-columns"></i> WITHDRAW</button>
+        </div>
+      </div>
+      <div class="section-title"><h3><i class="fa-solid fa-clock-rotate-left"></i> RECENT TRANSACTIONS</h3><span>History</span></div>
+      <div class="tx-list" id="txHistoryList"></div>
+    </main>
+
+    <!-- TAB 5: PROFILE -->
+    <main id="viewProfile" class="tab-view">
+      <div class="profile-card">
+        <div class="profile-avatar-box" onclick="triggerGalleryPicker()">
+          <img id="profileAvatarImg" src="" alt="User Logo">
+          <div class="camera-badge"><i class="fa-solid fa-image"></i></div>
+        </div>
+        <h3 id="profileNameDisplay">Player Name</h3>
+        <div class="profile-uid">@<span id="profileUsernameDisplay">username</span></div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Tap logo to upload custom photo</p>
+        <div class="profile-stats-grid">
+          <div class="p-stat"><h4 id="statMatches">0</h4><span>Matches Played</span></div>
+          <div class="p-stat"><h4 id="statKills">0</h4><span>Total Kills</span></div>
+          <div class="p-stat"><h4>₹<span id="statWon">0</span></h4><span>Total Winnings</span></div>
+        </div>
+      </div>
+
+      <div class="profile-menu">
+        <div class="menu-item" onclick="openCustomerServicePage()" style="border-color: var(--primary);">
+          <div class="menu-left"><div class="menu-icon" style="background: var(--gradient-main); color: #141418;"><i class="fa-solid fa-headset"></i></div><span style="font-weight: 800;">Customer Service (24/7 Help)</span></div>
+          <i class="fa-solid fa-chevron-right" style="color: var(--primary-dark);"></i>
+        </div>
+        <div class="menu-item" onclick="triggerInstantNotifEnable()"><div class="menu-left"><div class="menu-icon"><i class="fa-solid fa-bell"></i></div><span id="notifMenuStatusText">App Notifications (Active ✓)</span></div><i class="fa-solid fa-circle-check" style="color: #2E7D32;"></i></div>
+        <div class="menu-item" onclick="triggerGalleryPicker()"><div class="menu-left"><div class="menu-icon"><i class="fa-solid fa-camera-retro"></i></div><span>Change Profile Logo</span></div><i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i></div>
+        <div class="menu-item" onclick="openDepositPage()"><div class="menu-left"><div class="menu-icon"><i class="fa-solid fa-wallet"></i></div><span>Add Money To Wallet (Min ₹15)</span></div><i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i></div>
+        <div class="menu-item" onclick="openWithdrawPage()"><div class="menu-left"><div class="menu-icon"><i class="fa-solid fa-money-bill-transfer"></i></div><span>Instant Withdrawal (Min ₹50)</span></div><i class="fa-solid fa-chevron-right" style="color: var(--text-muted);"></i></div>
+        <div class="menu-item" onclick="openOfficialYouTube()"><div class="menu-left"><div class="menu-icon" style="background:#FFEBEE; color:#D32F2F;"><i class="fa-brands fa-youtube"></i></div><span>How To Get Room ID</span></div><i class="fa-solid fa-up-right-from-square" style="color: var(--primary-dark);"></i></div>
+        <div class="menu-item" onclick="handleLogout()"><div class="menu-left"><div class="menu-icon" style="background:#FFEBEE; color:#D32F2F;"><i class="fa-solid fa-power-off"></i></div><span style="color:#D32F2F; font-weight:700;">Logout Account</span></div><i class="fa-solid fa-chevron-right" style="color:#D32F2F;"></i></div>
+      </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" id="navBtnHome" onclick="switchMainTab('Home', this)"><i class="fa-solid fa-house"></i><span>Home</span></div>
+      <div class="nav-item" id="navBtnMyMatches" onclick="switchMainTab('MyMatches', this)"><i class="fa-solid fa-gamepad"></i><span>My Matches</span></div>
+      <div class="nav-item center-nav" id="navBtnLeaderboard" onclick="switchMainTab('Leaderboard', this)"><div class="center-circle"><i class="fa-solid fa-trophy"></i></div><span>Leaderboard</span></div>
+      <div class="nav-item" id="navBtnWallet" onclick="switchMainTab('Wallet', this)"><i class="fa-solid fa-wallet"></i><span>Wallet</span></div>
+      <div class="nav-item" id="navBtnProfile" onclick="switchMainTab('Profile', this)"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+    </nav>
+  </div>
+
+  <!-- FULL PAGE 1: CATEGORY MATCHES -->
+  <div class="full-page" id="categoryFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeCategoryPage()"><i class="fa-solid fa-arrow-left"></i></button><h3 id="catPageTitle">CATEGORY MATCHES</h3></div></div>
+    <div class="page-body"><div id="categoryMatchesContainer"></div></div>
+  </div>
+
+  <!-- FULL PAGE 2: SLOT SELECTION -->
+  <div class="full-page" id="slotSelectionFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeSlotSelectionPage()"><i class="fa-solid fa-arrow-left"></i></button><h3 id="slotPageTitle">SELECT YOUR SLOT</h3></div></div>
+    <div class="page-body">
+      <div id="slotStepOneBox">
+        <div class="slot-info-banner"><div><strong id="slotMatchTitleDisplay" style="font-size:14px; display:block;">Match Name</strong><span id="slotMatchLimitDisplay" style="font-size:11.5px; color:var(--text-muted);">Max Players: 48</span></div><span class="match-id-tag">Entry ₹<span id="slotEntryFeeDisplay">15</span></span></div>
+        <div class="slot-legend"><span><i class="legend-dot" style="background:#FFF; border:1.5px solid #F5B800;"></i>Available</span><span><i class="legend-dot" style="background:#FFD600; border:1.5px solid #141418;"></i>Selected</span><span><i class="legend-dot" style="background:#E0E0E0; border:1.5px solid #9E9E9E;"></i>Booked</span></div>
+        <div class="slots-grid-container" id="slotsGridContainer"></div>
+        <button class="btn-primary" onclick="proceedToGameNameStep()"><i class="fa-solid fa-circle-arrow-right"></i> CONTINUE TO JOIN</button>
+      </div>
+      <div id="slotStepTwoBox" style="display: none;">
+        <div class="details-card-box">
+          <h4><i class="fa-solid fa-id-card-clip"></i> ENTER PLAYER DETAILS</h4>
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Selected Slot: <strong style="color:#141418; background:#FFF3B0; padding:2px 8px; border-radius:6px;">Slot #<span id="chosenSlotNumBadge">1</span></strong></p>
+          <div class="form-group"><label>In-Game Name (IGN)</label><div class="input-box"><i class="fa-solid fa-gamepad"></i><input type="text" id="joinGameNameInput" placeholder="Enter Free Fire Name" required></div></div>
+          <div class="form-group"><label>Game UID (Optional)</label><div class="input-box"><i class="fa-solid fa-hashtag"></i><input type="text" id="joinGameUidInput" placeholder="Enter Free Fire UID"></div></div>
+          <div style="display:flex; gap:10px; margin-top:16px;">
+            <button type="button" class="wallet-btn" style="flex:1;" onclick="backToSlotStepOne()"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+            <button type="button" class="btn-primary" style="flex:2;" onclick="confirmFinalMatchJoin()"><i class="fa-solid fa-check-double"></i> JOIN MATCH NOW</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 3: MATCH DETAILS -->
+  <div class="full-page" id="matchDetailsFullPage">
+    <div class="page-header">
+      <div class="page-header-left">
+        <button class="back-btn" onclick="closeMatchDetailsPage()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h3 id="detailsPageHeader">MATCH DETAILS</h3>
+      </div>
+    </div>
+    <div class="sub-tabs" style="margin-top:12px;">
+      <div class="sub-tab active" id="dTabRules" onclick="switchDetailsSubTab('rules')">Rules</div>
+      <div class="sub-tab" id="dTabParticipants" onclick="switchDetailsSubTab('participants')">Participants</div>
+      <div class="sub-tab" id="dTabResult" onclick="switchDetailsSubTab('result')">Match Result</div>
+    </div>
+    <div class="page-body">
+      <div class="slot-info-banner">
+        <div>
+          <strong id="detailMatchTitle" style="font-size:14.5px; display:block;">Match Name</strong>
+          <span id="detailMatchTime" style="font-size:11.5px; color:var(--text-muted);">Time & Map</span>
+        </div>
+        <span class="match-id-tag" id="detailMatchStatusBadge">Upcoming</span>
+      </div>
+
+      <!-- ROOM ID & PASSWORD BOX (SHOWN IMMEDIATELY WHEN ADMIN SETS CREDENTIALS) -->
+      <div id="joinedRoomCredentialsBox" class="details-card-box" style="display:none; border:2px solid var(--primary); background:var(--bg-light);">
+        <h4><i class="fa-solid fa-key"></i> ROOM ID & PASSWORD (TAP TO COPY)</h4>
+        <div class="copy-bar-row" onclick="copyCredentialText('displayRoomIdText', 'Room ID')">
+          <div><span>ROOM ID:</span><strong id="displayRoomIdText">Waiting...</strong></div>
+          <div class="copy-pill-btn"><i class="fa-regular fa-copy"></i> COPY</div>
+        </div>
+        <div class="copy-bar-row" onclick="copyCredentialText('displayRoomPassText', 'Room Password')">
+          <div><span>PASSWORD:</span><strong id="displayRoomPassText">Waiting...</strong></div>
+          <div class="copy-pill-btn"><i class="fa-regular fa-copy"></i> COPY</div>
+        </div>
+      </div>
+
+      <div id="detailsRulesSection" class="details-card-box">
+        <h4><i class="fa-solid fa-scroll"></i> OFFICIAL RULES</h4>
+        <div id="detailsRulesContent" style="font-size:12.5px; line-height:1.7; color:var(--text-dark); white-space:pre-line;"></div>
+      </div>
+
+      <div id="detailsParticipantsSection" class="details-card-box" style="display: none;">
+        <h4><i class="fa-solid fa-users"></i> PARTICIPANTS (<span id="joinedCountNum">0</span>/<span id="maxCountNum">48</span>)</h4>
+        <div id="detailsParticipantsList"></div>
+      </div>
+
+      <div id="detailsResultSection" class="details-card-box" style="display: none;">
+        <h4><i class="fa-solid fa-ranking-star"></i> MATCH RESULT & WINNER</h4>
+        <div id="detailsResultList"></div>
+      </div>
+
+      <div id="detailsBottomActionWrap" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 4: DEPOSIT (MINIMUM ₹15) -->
+  <div class="full-page" id="depositFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeDepositPage()"><i class="fa-solid fa-arrow-left"></i></button><h3>DEPOSIT MONEY</h3></div></div>
+    <div class="page-body">
+      <div class="form-group">
+        <label>Enter Deposit Amount (Minimum ₹15)</label>
+        <div class="input-box"><i class="fa-solid fa-indian-rupee-sign"></i><input type="number" id="depositAmountInput" value="15" min="15" placeholder="Minimum ₹15"></div>
+      </div>
+      <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Quick Select Amount</label>
+      <div class="amount-chips-grid" id="depositChipsGrid"></div>
+      <button class="btn-primary" onclick="startDepositGeneration()"><i class="fa-solid fa-bolt"></i> DEPOSIT NOW</button>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 5: QR PAYMENT -->
+  <div class="full-page" id="qrPaymentFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeQrPaymentPage()"><i class="fa-solid fa-arrow-left"></i></button><h3>SCAN QR TO PAY</h3></div></div>
+    <div class="page-body">
+      <div class="qr-payment-card">
+        <div class="timer-badge-box"><span>Session Expires In</span><div class="timer-digits"><i class="fa-regular fa-clock" style="font-size:24px;"></i><strong id="qrCountdownText">07:00</strong></div></div>
+        <span style="background:var(--bg-light); color:var(--text-dark); border:1px solid var(--primary); padding:4px 12px; border-radius:20px; font-size:11px; font-weight:800;">OFFICIAL PAYMENT GATEWAY</span>
+        <h3 style="margin-top:10px; font-size:22px; font-weight:800;">Pay ₹<span id="genPayAmount">15</span></h3>
+        <div class="qr-box-frame" id="userQrBoxFrame"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="120" fill="#FFF"/><rect x="8" y="8" width="30" height="30" fill="none" stroke="#141418" stroke-width="6"/><rect x="17" y="17" width="12" height="12" fill="#141418"/><rect x="82" y="8" width="30" height="30" fill="none" stroke="#141418" stroke-width="6"/><rect x="91" y="17" width="12" height="12" fill="#141418"/><rect x="8" y="82" width="30" height="30" fill="none" stroke="#141418" stroke-width="6"/><rect x="17" y="91" width="12" height="12" fill="#141418"/></svg></div>
+        <p style="font-size:11.5px; color:var(--text-muted); font-weight:600;">Admin UPI ID:</p>
+        <div class="code-pill"><span id="adminCodeText">ADMIN-FF-9842@UPI</span><i class="fa-regular fa-copy" style="cursor:pointer;" onclick="copyAdminCode()"></i></div>
+        <button class="btn-primary" id="iHavePaidBtn" onclick="handleUserClickedPaid()"><i class="fa-solid fa-paper-plane"></i> I HAVE PAID</button>
+        <div class="waiting-status-box" id="waitingAdminBox"><div class="pulse-dot"></div><span>Waiting for Admin Approval...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 6: WITHDRAW (MINIMUM ₹50) -->
+  <div class="full-page" id="withdrawFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeWithdrawPage()"><i class="fa-solid fa-arrow-left"></i></button><h3>WITHDRAW MONEY</h3></div></div>
+    <div class="page-body">
+      <div style="background:var(--white); border:1.5px solid var(--primary); padding:14px; border-radius:14px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;"><span style="font-size:13px; font-weight:600;">Available Balance:</span><strong style="font-size:18px;">₹<span id="withdrawAvailBal">0</span></strong></div>
+      <div class="form-group">
+        <label>Withdrawal Amount (Minimum ₹50)</label>
+        <div class="input-box"><i class="fa-solid fa-indian-rupee-sign"></i><input type="number" id="withdrawAmountInput" placeholder="Minimum ₹50" min="50"></div>
+      </div>
+      <label style="font-size:12px; font-weight:700;">Select Payout Method</label>
+      <div class="method-grid">
+        <div class="method-card selected" onclick="selectWithdrawMethod('PhonePe', this)"><i class="fa-solid fa-mobile-screen-button"></i><span>PhonePe</span></div>
+        <div class="method-card" onclick="selectWithdrawMethod('Paytm', this)"><i class="fa-solid fa-wallet"></i><span>Paytm</span></div>
+        <div class="method-card" onclick="selectWithdrawMethod('Bank Account', this)"><i class="fa-solid fa-building-columns"></i><span>Bank</span></div>
+      </div>
+      <div class="form-group"><label id="withdrawAccountLabel">Enter PhonePe Number / UPI ID</label><div class="input-box"><i class="fa-solid fa-id-card"></i><input type="text" id="withdrawAccountInput" placeholder="Enter Account Details"></div></div>
+      <button class="btn-primary" onclick="submitWithdrawal()"><i class="fa-solid fa-paper-plane"></i> WITHDRAW NOW</button>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 7: CUSTOMER SERVICE -->
+  <div class="full-page" id="customerServiceFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeCustomerServicePage()"><i class="fa-solid fa-arrow-left"></i></button><h3>CUSTOMER SERVICE</h3></div></div>
+    <div class="page-body">
+      <div class="cs-issue-card" onclick="openSupportChannelPage('Withdrawal Issue')"><div class="cs-card-left"><div class="cs-card-icon"><i class="fa-solid fa-money-bill-transfer"></i></div><div><h4>Withdrawal Issue</h4><p>Help with pending payout</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+      <div class="cs-issue-card" onclick="openSupportChannelPage('Deposit Issue')"><div class="cs-card-left"><div class="cs-card-icon"><i class="fa-solid fa-wallet"></i></div><div><h4>Deposit Issue</h4><p>Money paid but balance not added</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+      <div class="cs-issue-card" onclick="openSupportChannelPage('Hacker Report')"><div class="cs-card-left"><div class="cs-card-icon"><i class="fa-solid fa-user-shield"></i></div><div><h4>Hacker Report</h4><p>Report unfair play or cheater</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+      <div class="cs-issue-card" onclick="openSupportChannelPage('Room ID Issue')"><div class="cs-card-left"><div class="cs-card-icon"><i class="fa-solid fa-key"></i></div><div><h4>Room ID Issue</h4><p>Help regarding Custom Room ID & Pass</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+    </div>
+  </div>
+
+  <!-- FULL PAGE 8: SUPPORT CHANNEL -->
+  <div class="full-page" id="supportChannelFullPage">
+    <div class="page-header"><div class="page-header-left"><button class="back-btn" onclick="closeSupportChannelPage()"><i class="fa-solid fa-arrow-left"></i></button><h3 id="supportChannelHeaderTitle">SUPPORT</h3></div></div>
+    <div class="page-body">
+      <div class="channel-btn-card whatsapp" onclick="sendSupportMessageVia('whatsapp')"><div class="cs-card-left"><div class="channel-icon-circle" style="background:#25D366;"><i class="fa-brands fa-whatsapp"></i></div><div><h4>WhatsApp Support</h4><p>Instant Chat with Admin</p></div></div><i class="fa-solid fa-paper-plane" style="color:#25D366;"></i></div>
+      <div class="channel-btn-card telegram" onclick="sendSupportMessageVia('telegram')"><div class="cs-card-left"><div class="channel-icon-circle" style="background:#0088CC;"><i class="fa-brands fa-telegram"></i></div><div><h4>Telegram Support</h4><p>Connect via Official Telegram</p></div></div><i class="fa-solid fa-paper-plane" style="color:#0088CC;"></i></div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
+  <div class="modal-overlay" id="generatingModal"><div class="popup-box"><div class="spinner"></div><h3>Generating QR...</h3></div></div>
+  <div class="modal-overlay" id="statusPopupModal"><div class="popup-box"><div class="popup-icon-success"><i class="fa-solid fa-check"></i></div><h3 id="popupTitle">Success!</h3><p id="popupDesc" style="margin:8px 0 18px;"></p><button class="btn-primary" onclick="closeStatusPopup()">OK</button></div></div>
+  <script>
+    const FB_DB_URL = "https://clash-99-77547-default-rtdb.firebaseio.com";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXndTI_rmKymnfEG6SttPZL2wqoXVunx0",
+      authDomain: "clash-99-77547.firebaseapp.com",
+      databaseURL: FB_DB_URL,
+      projectId: "clash-99-77547",
+      storageBucket: "clash-99-77547.firebasestorage.app",
+      messagingSenderId: "455514898082",
+      appId: "1:455514898082:web:9ea600257b694faf6a21fb"
+    };
+
+    let db = null;
+    try {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch (e) {}
+
+    let OFFICIAL_YT_URL = "https://youtube.com/@nasimrf-r4g?si=EjakwQqkyT6copJD";
+    let adminLiveSettings = {
+      upiId: "ADMIN-FF-9842@UPI",
+      qrImage: "",
+      channelUrl: OFFICIAL_YT_URL,
+      whatsappNumber: "919876543210",
+      telegramUsername: "FireArenaSupport",
+      serverOnline: true,
+      maintenanceReason: "Server is under maintenance. Please check back soon!",
+      appTheme: "white_yellow",
+      customCategories: [],
+      customBanners: {},
+      customCards: {}
+    };
+
+    let localWriteLockUntil = 0;
+    let selectedSupportIssue = "Withdrawal Issue";
+    let lastSeenNotifTimestamp = Number(localStorage.getItem('ff_last_notif_ts') || 0);
+
+    function isServerCurrentlyOnline() {
+      return adminLiveSettings.serverOnline !== false;
+    }
+
+    function openOfficialYouTube() {
+      const targetUrl = (adminLiveSettings && adminLiveSettings.channelUrl) ? adminLiveSettings.channelUrl : OFFICIAL_YT_URL;
+      const win = window.open(targetUrl, '_blank');
+      if (!win) window.location.href = targetUrl;
+    }
+
+    function openCustomerServicePage() { document.getElementById('customerServiceFullPage').classList.add('open'); }
+    function closeCustomerServicePage() { document.getElementById('customerServiceFullPage').classList.remove('open'); }
+
+    function openSupportChannelPage(issueTitle) {
+      selectedSupportIssue = issueTitle;
+      document.getElementById('supportChannelHeaderTitle').textContent = issueTitle.toUpperCase();
+      document.getElementById('supportChannelFullPage').classList.add('open');
+    }
+    function closeSupportChannelPage() { document.getElementById('supportChannelFullPage').classList.remove('open'); }
+
+    function sendSupportMessageVia(platform) {
+      const uName = currentUser ? (currentUser.name || currentUser.username) : "Player";
+      const uPhone = currentUser ? (currentUser.phone || "N/A") : "N/A";
+      const msgText = `Hello Fire Arena Admin, I need help regarding: *${selectedSupportIssue}*.\nMy Name: ${uName}\nMy Phone: ${uPhone}`;
+      const encodedMsg = encodeURIComponent(msgText);
+
+      if (platform === 'whatsapp') {
+        const waNum = (adminLiveSettings.whatsappNumber || "919876543210").replace(/\D/g, '');
+        window.open(`https://wa.me/${waNum}?text=${encodedMsg}`, '_blank');
+      } else {
+        const tgUser = (adminLiveSettings.telegramUsername || "FireArenaSupport").replace(/^@/, '').replace('https://t.me/', '');
+        window.open(`https://t.me/${tgUser}?text=${encodedMsg}`, '_blank');
+      }
+    }
+
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+    const DEFAULT_AVATAR = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFD600"/><stop offset="100%" stop-color="#F5B800"/></linearGradient></defs><rect width="120" height="120" fill="url(#g)"/><circle cx="60" cy="44" r="22" fill="#141418"/><path d="M24 106 C24 78 96 78 96 106 Z" fill="#141418"/></svg>`);
+
+    function getCharacterSvg(index) {
+      const shirtColors = ['#FFFFFF', '#1E293B', '#0284C7', '#334155', '#EAB308', '#111827'];
+      const accentColors = ['#FFD600', '#FFF176', '#FACC15', '#FDE047'];
+      const shirt = shirtColors[index % shirtColors.length];
+      const glow = accentColors[index % accentColors.length];
+      const hasStrawHat = index % 3 === 1;
+      return `<svg class="char-svg" viewBox="0 0 140 145" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="aura${index}" cx="50%" cy="45%" r="52%"><stop offset="0%" stop-color="#FFFDE7"/><stop offset="45%" stop-color="${glow}"/><stop offset="85%" stop-color="#9A6B00"/><stop offset="100%" stop-color="#1F1600"/></radialGradient></defs><rect width="140" height="145" fill="url(#aura${index})"/><circle cx="70" cy="64" r="46" fill="none" stroke="#FFF9C4" stroke-width="2" opacity="0.65"/><path d="M12 90 L126 24" stroke="#1E1E24" stroke-width="7" stroke-linecap="round"/><path d="M12 90 L126 24" stroke="#FDE047" stroke-width="2" stroke-linecap="round"/><path d="M34 135 C36 94 104 94 106 135 Z" fill="${shirt}" stroke="#141418" stroke-width="2"/><rect x="63" y="72" width="14" height="16" rx="4" fill="#D9A17C"/><path d="M53 52 C53 38 87 38 87 52 L85 74 C85 82 55 82 55 74 Z" fill="#E5B28F"/><path d="M54 60 L86 60 L83 78 L70 83 L57 78 Z" fill="#18181B" stroke="#FFD600" stroke-width="1.2"/>${hasStrawHat ? `<polygon points="26,46 70,25 114,46" fill="#D4A338" stroke="#141418" stroke-width="2"/>` : `<path d="M46 54 L52 34 L61 42 L70 26 L79 42 L88 34 L94 54 Z" fill="#F8FAFC" stroke="#334155" stroke-width="1.5"/>`}</svg>`;
+    }
+
+    const DEFAULT_CATEGORIES = [
+      { name: "BR Per Kill", p1: "BR", p2: "PER KILL", maxSlots: 48 },
+      { name: "BR Survival", p1: "BR", p2: "SURVIVAL", maxSlots: 48 },
+      { name: "BR Mode", p1: "FULL", p2: "MAP", maxSlots: 48 },
+      { name: "CS 1v1", p1: "CS", p2: "1 VS 1", maxSlots: 2 },
+      { name: "CS 3v3", p1: "CS", p2: "3 VS 3", maxSlots: 6 },
+      { name: "CS 2v2", p1: "CS", p2: "2 VS 2", maxSlots: 4 },
+      { name: "CS 4v4", p1: "CS", p2: "4 VS 4", maxSlots: 8 },
+      { name: "CS Headshot", p1: "HEAD", p2: "CS 1V1", maxSlots: 2 },
+      { name: "CS Body", p1: "CS", p2: "BODY PRO", maxSlots: 4 },
+      { name: "LW Headshot", p1: "LW", p2: "HEAD", maxSlots: 2 },
+      { name: "LW 1v1", p1: "LW", p2: "1 VS 1", maxSlots: 2 },
+      { name: "LW 10 Rs Only", p1: "LW", p2: "10RS", maxSlots: 2 },
+      { name: "Night Mode", p1: "NIGHT", p2: "MODE", maxSlots: 48 }
+    ];
+
+    // MINIMUM DEPOSIT SHORTCUTS STARTING FROM ₹15
+    const DEPOSIT_SHORTCUTS = [15, 30, 50, 80, 100, 150, 200, 300, 500, 1000, 1500, 2000];
+
+    let users = [];
+    try { users = JSON.parse(localStorage.getItem('ff_arena_users') || '[]'); } catch (e) { users = []; }
+    let matchesDB = {};
+    try { matchesDB = JSON.parse(localStorage.getItem('ff_arena_matches_db') || '{}'); } catch (e) { matchesDB = {}; }
+
+    let currentUser = null;
+    let currentMyMatchesTab = 'Upcoming';
+    let selectedWithdrawMethod = 'PhonePe';
+    let qrTimerInterval = null;
+    let pendingDepositRecorded = false;
+    let activeCategoryName = '';
+    let activeMatchId = '';
+    let chosenSlotNumber = null;
+
+    function getActiveCategoriesList() {
+      if (adminLiveSettings.customCategories && Array.isArray(adminLiveSettings.customCategories) && adminLiveSettings.customCategories.length > 0) {
+        return adminLiveSettings.customCategories;
+      }
+      return DEFAULT_CATEGORIES;
+    }
+
+    function applyServerAndVisualSettings() {
+      const online = isServerCurrentlyOnline();
+      const noticeBox = document.getElementById('homeServerOfflineNotice');
+      const catGrid = document.getElementById('categoryGrid');
+      const badge = document.getElementById('tournamentModeBadge');
+
+      const activeTheme = adminLiveSettings.appTheme || 'white_yellow';
+      document.body.className = 'theme-' + activeTheme;
+
+      const reasonString = (adminLiveSettings.maintenanceReason && String(adminLiveSettings.maintenanceReason).trim() !== '')
+        ? adminLiveSettings.maintenanceReason
+        : "Server is under maintenance. Please check back soon!";
+
+      if (noticeBox) {
+        noticeBox.style.display = online ? 'none' : 'block';
+        const reasonPara = document.getElementById('maintenanceReasonText');
+        if (reasonPara) {
+          reasonPara.textContent = reasonString;
+        }
+      }
+
+      if (catGrid) catGrid.style.display = online ? 'grid' : 'none';
+      if (badge) badge.textContent = online ? `${getActiveCategoriesList().length} Modes` : 'PAUSED';
+
+      if (!online) {
+        closeCategoryPage();
+        closeSlotSelectionPage();
+        closeDepositPage();
+        closeQrPaymentPage();
+      }
+
+      if (adminLiveSettings.customBanners) {
+        for (let i = 1; i <= 5; i++) {
+          const bImg = adminLiveSettings.customBanners[i];
+          const slideEl = document.getElementById('slideBanner' + i);
+          if (slideEl && bImg) {
+            slideEl.style.backgroundImage = `url('${bImg}')`;
+            slideEl.style.backgroundSize = 'cover';
+            slideEl.style.backgroundPosition = 'center';
+          }
+        }
+      }
+      renderCategories();
+      if (currentUser) renderMyMatches();
+    }
+
+    // STRICT MATCH LIFECYCLE: UPCOMING -> ONGOING (WHEN ROOM ID/PASS SET) -> COMPLETED (WHEN WINNER DECLARED)
+    function syncMatchLifecycleStatus(m) {
+      if (!m) return;
+      const rawParts = m.participants
+        ? (Array.isArray(m.participants) ? m.participants.filter(Boolean) : Object.values(m.participants).filter(Boolean))
+        : [];
+      m.participants = rawParts;
+
+      const hasWinnerPrize = m.participants.some(p => Number(p.prizeWon || 0) > 0);
+      const isCompleted = (String(m.status || '').toLowerCase() === 'completed') || m.winnerDeclared === true || hasWinnerPrize;
+
+      const rId = m.roomId !== undefined && m.roomId !== null ? String(m.roomId).trim() : '';
+      const rPass = m.roomPass !== undefined && m.roomPass !== null ? String(m.roomPass).trim() : '';
+      const hasRoom = Boolean(rId !== '' || rPass !== '');
+      const isOngoing = (String(m.status || '').toLowerCase() === 'ongoing') || hasRoom;
+
+      if (isCompleted) {
+        m.status = 'Completed';
+        m.winnerDeclared = true;
+      } else if (isOngoing) {
+        m.status = 'Ongoing';
+        m.winnerDeclared = false;
+      } else {
+        m.status = 'Upcoming';
+        m.winnerDeclared = false;
+      }
+      m.roomId = rId;
+      m.roomPass = rPass;
+    }
+
+    function checkUserBanState(u) {
+      if (!u) return { banned: false, message: "" };
+      if (u.isBanned && u.banType === 'days' && u.banUntil && Date.now() > Number(u.banUntil)) {
+        u.isBanned = false;
+        u.banType = '';
+        u.banUntil = 0;
+        return { banned: false, message: "" };
+      }
+      if (u.isBanned || u.isBlocked) {
+        const reason = u.banReason || "Rule Violation / Unfair Play";
+        if (u.banType === 'days' && u.banUntil) {
+          const remMs = Number(u.banUntil) - Date.now();
+          const remDays = Math.max(1, Math.ceil(remMs / (1000 * 60 * 60 * 24)));
+          return {
+            banned: true,
+            message: `Your account is banned for ${remDays} day(s). Reason: ${reason}`
+          };
+        }
+        return {
+          banned: true,
+          message: `Your account is permanently banned by Admin. Reason: ${reason}`
+        };
+      }
+      return { banned: false, message: "" };
+    }
+
+    function normalizeUsersArray(raw) {
+      if (!raw) return [];
+      const arr = Array.isArray(raw) ? raw.filter(Boolean) : Object.values(raw).filter(Boolean);
+      return arr.map(u => ({
+        ...u,
+        balance: Number(u.balance || 0),
+        kills: Number(u.kills || 0),
+        winnings: Number(u.winnings || 0),
+        updatedAt: Number(u.updatedAt || 0),
+        transactions: u.transactions ? (Array.isArray(u.transactions) ? u.transactions.filter(Boolean) : Object.values(u.transactions).filter(Boolean)) : [],
+        joinedMatches: u.joinedMatches ? (Array.isArray(u.joinedMatches) ? u.joinedMatches.filter(Boolean) : Object.values(u.joinedMatches).filter(Boolean)) : []
+      }));
+    }
+
+    function getLocalJoinedBackup(user) {
+      if (!user || !user.phone) return [];
+      try {
+        const raw = localStorage.getItem('ff_joined_backup_' + user.phone);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) { return []; }
+    }
+
+    function saveLocalJoinedBackup(user, joinedList) {
+      if (!user || !user.phone) return;
+      try {
+        localStorage.setItem('ff_joined_backup_' + user.phone, JSON.stringify(joinedList || []));
+      } catch (e) {}
+    }
+
+    function loadUsersFromStorage() {
+      try {
+        const local = normalizeUsersArray(JSON.parse(localStorage.getItem('ff_arena_users') || '[]'));
+        if (local.length > 0 && users.length === 0) users = local;
+      } catch (e) {}
+    }
+
+    function saveUsersToStorage() {
+      localWriteLockUntil = Date.now() + 6500;
+      try {
+        if (currentUser) {
+          currentUser.isLoggedIn = true;
+          currentUser.updatedAt = Date.now();
+          saveLocalJoinedBackup(currentUser, currentUser.joinedMatches);
+          const idx = users.findIndex(u =>
+            (u.phone && currentUser.phone && String(u.phone).slice(-10) === String(currentUser.phone).slice(-10)) ||
+            (u.username && currentUser.username && u.username.toLowerCase() === currentUser.username.toLowerCase())
+          );
+          if (idx !== -1) users[idx] = currentUser; else users.push(currentUser);
+          localStorage.setItem('ff_arena_active_session', JSON.stringify(currentUser));
+        }
+        localStorage.setItem('ff_arena_users', JSON.stringify(users));
+      } catch (e) {}
+
+      if (db) { try { db.ref('ff_arena/users').set(users); } catch (e) {} }
+      fetch(`${FB_DB_URL}/ff_arena/users.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(users)
+      }).catch(() => {});
+    }
+
+    function saveMatchesToStorage() {
+      localWriteLockUntil = Date.now() + 6500;
+      Object.keys(matchesDB).forEach(cat => {
+        (matchesDB[cat] || []).forEach(m => syncMatchLifecycleStatus(m));
+      });
+      try { localStorage.setItem('ff_arena_matches_db', JSON.stringify(matchesDB)); } catch (e) {}
+      if (db) { try { db.ref('ff_arena/matchesDB').set(matchesDB); } catch (e) {} }
+      fetch(`${FB_DB_URL}/ff_arena/matchesDB.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(matchesDB)
+      }).catch(() => {});
+    }
+
+    function playNotificationTone() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.setValueAtTime(1174, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.45);
+      } catch (e) {}
+    }
+
+    function closeLivePushBanner() {
+      const b = document.getElementById('livePushBanner');
+      if (b) b.classList.remove('show-banner');
+    }
+
+    function sendAppNotification(title, bodyText) {
+      const banner = document.getElementById('livePushBanner');
+      const bTitle = document.getElementById('pushBannerTitle');
+      const bBody = document.getElementById('pushBannerBody');
+      if (banner && bTitle && bBody) {
+        bTitle.textContent = title || "FIRE ARENA";
+        bBody.textContent = bodyText || "";
+        banner.classList.add('show-banner');
+        clearTimeout(window.pushBannerTimer);
+        window.pushBannerTimer = setTimeout(() => { banner.classList.remove('show-banner'); }, 6500);
+      }
+
+      playNotificationTone();
+      if (navigator.vibrate) { try { navigator.vibrate([200, 100, 200]); } catch (e) {} }
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        try { new Notification(title, { body: bodyText }); } catch (e) {}
+      }
+    }
+
+    function triggerInstantNotifEnable() {
+      localStorage.setItem('ff_arena_notif_granted', 'true');
+      if ("Notification" in window && Notification.permission !== "granted") {
+        try { Notification.requestPermission().catch(() => {}); } catch (e) {}
+      }
+      sendAppNotification("FIRE ARENA APK", "Instant In-App Notifications & Sound Alerts are Active! 🔔");
+      showToast("APK Notifications Active! ✓");
+    }
+
+    function findMatchById(matchId) {
+      if (!matchId) return null;
+      const target = String(matchId).trim();
+      for (const cat of Object.keys(matchesDB)) {
+        const list = Array.isArray(matchesDB[cat]) ? matchesDB[cat] : Object.values(matchesDB[cat] || {});
+        const m = list.find(item => item && String(item.id).trim() === target);
+        if (m) {
+          syncMatchLifecycleStatus(m);
+          return m;
+        }
+      }
+      return null;
+    }
+
+    function isUserJoinedInMatch(m) {
+      if (!currentUser || !m) return null;
+      const jm = (currentUser.joinedMatches || []).find(j => j && String(j.id).trim() === String(m.id).trim());
+      if (jm) return jm;
+      const backupJm = getLocalJoinedBackup(currentUser).find(j => j && String(j.id).trim() === String(m.id).trim());
+      if (backupJm) return backupJm;
+      const part = (m.participants || []).find(p =>
+        (p.phone && currentUser.phone && String(p.phone).slice(-10) === String(currentUser.phone).slice(-10)) ||
+        (p.gameName && currentUser.username && String(p.gameName).toLowerCase() === String(currentUser.username).toLowerCase()) ||
+        (p.gameName && currentUser.name && String(p.gameName).toLowerCase() === String(currentUser.name).toLowerCase())
+      );
+      return part || null;
+    }
+
+    // BULLETPROOF SYNC FOR UPCOMING -> ONGOING -> COMPLETED
+    function syncCurrentUserJoinedMatchesWithLiveDB() {
+      if (!currentUser) return;
+      if (!Array.isArray(currentUser.joinedMatches)) currentUser.joinedMatches = [];
+
+      // 1. Restore from local backup so joined matches never disappear
+      const backupList = getLocalJoinedBackup(currentUser);
+      backupList.forEach(bItem => {
+        if (bItem && bItem.id && !currentUser.joinedMatches.some(j => String(j.id).trim() === String(bItem.id).trim())) {
+          currentUser.joinedMatches.push(bItem);
+        }
+      });
+
+      // 2. Scan all matches in matchesDB to see if user is in participants
+      Object.keys(matchesDB).forEach(cat => {
+        const arr = Array.isArray(matchesDB[cat]) ? matchesDB[cat] : Object.values(matchesDB[cat] || {});
+        arr.forEach(m => {
+          if (!m) return;
+          syncMatchLifecycleStatus(m);
+          const myPart = (m.participants || []).find(p =>
+            (p.phone && currentUser.phone && String(p.phone).slice(-10) === String(currentUser.phone).slice(-10)) ||
+            (p.gameName && currentUser.username && String(p.gameName).toLowerCase() === String(currentUser.username).toLowerCase()) ||
+            (p.gameName && currentUser.name && String(p.gameName).toLowerCase() === String(currentUser.name).toLowerCase())
+          );
+          if (myPart && !currentUser.joinedMatches.some(j => String(j.id).trim() === String(m.id).trim())) {
+            currentUser.joinedMatches.push({
+              id: m.id,
+              category: m.category,
+              title: m.title,
+              time: m.time,
+              prize: m.prize,
+              entry: m.entry,
+              map: m.map,
+              status: m.status,
+              roomId: m.roomId || '',
+              roomPass: m.roomPass || '',
+              slot: myPart.slot || 1,
+              gameName: myPart.gameName,
+              gameUid: myPart.gameUid || "N/A"
+            });
+          }
+        });
+      });
+
+      let autoSwitchTab = null;
+
+      // 3. Sync every joined match with live matchesDB status, Room ID, Password & Winner state
+      currentUser.joinedMatches = currentUser.joinedMatches.filter(Boolean).map(jm => {
+        const liveM = findMatchById(jm.id);
+        if (liveM) {
+          syncMatchLifecycleStatus(liveM);
+          const stateKey = 'ff_match_state_' + currentUser.phone + '_' + liveM.id;
+          const prevStatus = localStorage.getItem(stateKey) || jm.status || 'Upcoming';
+
+          jm.status = liveM.status;
+          jm.roomId = liveM.roomId || '';
+          jm.roomPass = liveM.roomPass || '';
+          jm.prize = liveM.prize;
+          jm.time = liveM.time;
+          jm.title = liveM.title;
+          jm.map = liveM.map;
+
+          if (prevStatus !== liveM.status) {
+            localStorage.setItem(stateKey, liveM.status);
+            autoSwitchTab = liveM.status;
+          } else {
+            localStorage.setItem(stateKey, liveM.status);
+          }
+        } else {
+          if (!jm.status) jm.status = 'Upcoming';
+        }
+        return jm;
+      });
+
+      saveLocalJoinedBackup(currentUser, currentUser.joinedMatches);
+      try { localStorage.setItem('ff_arena_active_session', JSON.stringify(currentUser)); } catch (e) {}
+
+      // 4. Update Live Counts on Sub-Tabs
+      const ongoingCount = currentUser.joinedMatches.filter(m => m.status === 'Ongoing').length;
+      const upcomingCount = currentUser.joinedMatches.filter(m => m.status === 'Upcoming').length;
+      const completedCount = currentUser.joinedMatches.filter(m => m.status === 'Completed').length;
+
+      const elOn = document.getElementById('countOngoing');
+      const elUp = document.getElementById('countUpcoming');
+      const elCo = document.getElementById('countCompleted');
+      if (elOn) elOn.textContent = ongoingCount;
+      if (elUp) elUp.textContent = upcomingCount;
+      if (elCo) elCo.textContent = completedCount;
+
+      // 5. Auto-switch tab when match status changes to Ongoing or Completed
+      if (autoSwitchTab && ['Upcoming', 'Ongoing', 'Completed'].includes(autoSwitchTab)) {
+        currentMyMatchesTab = autoSwitchTab;
+        document.querySelectorAll('#viewMyMatches .sub-tab').forEach(t => t.classList.remove('active'));
+        const tabBtn = document.getElementById('subTab' + autoSwitchTab);
+        if (tabBtn) tabBtn.classList.add('active');
+      }
+    }
+
+    function applyCloudSnapshot(rootData) {
+      if (!rootData) return;
+      const arena = rootData.ff_arena || rootData;
+
+      // 1. Broadcast Notification
+      if (arena.broadcastNotification) {
+        const notif = arena.broadcastNotification;
+        const ts = Number(notif.timestamp || 0);
+        if (ts > 0 && ts > lastSeenNotifTimestamp) {
+          lastSeenNotifTimestamp = ts;
+          try { localStorage.setItem('ff_last_notif_ts', String(ts)); } catch (e) {}
+          sendAppNotification(notif.title || "FIRE ARENA", notif.body || "New Announcement!");
+        }
+      }
+
+      // 2. Admin Settings
+      if (arena.adminSettings) {
+        adminLiveSettings = { ...adminLiveSettings, ...arena.adminSettings };
+        try { localStorage.setItem('ff_arena_admin_settings', JSON.stringify(adminLiveSettings)); } catch (e) {}
+        if (adminLiveSettings.channelUrl) OFFICIAL_YT_URL = adminLiveSettings.channelUrl;
+        if (adminLiveSettings.upiId) {
+          const codeEl = document.getElementById('adminCodeText');
+          if (codeEl) codeEl.textContent = adminLiveSettings.upiId;
+        }
+        if (adminLiveSettings.qrImage) {
+          const qrFrame = document.getElementById('userQrBoxFrame');
+          if (qrFrame) qrFrame.innerHTML = `<img src="${adminLiveSettings.qrImage}" alt="QR">`;
+        }
+        applyServerAndVisualSettings();
+      }
+
+      // Respect local write lock so user joins/deposits are never overwritten mid-save
+      if (Date.now() < localWriteLockUntil) return;
+
+      // 3. Matches DB
+      if (arena.matchesDB) {
+        const newDB = {};
+        Object.keys(arena.matchesDB).forEach(cat => {
+          const rawCat = arena.matchesDB[cat];
+          const arr = Array.isArray(rawCat) ? rawCat.filter(Boolean) : Object.values(rawCat || {}).filter(Boolean);
+          arr.forEach(m => {
+            syncMatchLifecycleStatus(m);
+            const joinedInfo = isUserJoinedInMatch(m);
+
+            // Notify when Room ID & Password set -> Ongoing
+            const hasCreds = Boolean(m.roomId && String(m.roomId).trim() !== '');
+            if (hasCreds && joinedInfo && m.status === 'Ongoing') {
+              const notifKey = 'notified_room_' + m.id + '_' + m.roomId + '_' + m.roomPass;
+              if (!localStorage.getItem(notifKey)) {
+                localStorage.setItem(notifKey, 'true');
+                sendAppNotification(`Room ID Ready: ${m.title}`, `Room ID: ${m.roomId} | Pass: ${m.roomPass}`);
+                showToast(`Room ID & Pass Ready! Match is now Ongoing.`);
+              }
+            }
+
+            // Notify when Winner / Result declared -> Completed
+            if (m.status === 'Completed' && joinedInfo) {
+              const winKey = 'notified_completed_' + m.id;
+              if (!localStorage.getItem(winKey)) {
+                localStorage.setItem(winKey, 'true');
+                sendAppNotification(`Match Completed! 🏆`, `${m.title} results are now live in Completed tab!`);
+                showToast(`Match Completed! Check Winner Result.`);
+              }
+            }
+          });
+          newDB[cat] = arr;
+        });
+        matchesDB = newDB;
+        try { localStorage.setItem('ff_arena_matches_db', JSON.stringify(matchesDB)); } catch (e) {}
+      }
+
+      // 4. Users List & Current User Sync
+      if (arena.users) {
+        const cloudUsers = normalizeUsersArray(arena.users);
+        if (cloudUsers.length > 0) {
+          users = cloudUsers;
+          try { localStorage.setItem('ff_arena_users', JSON.stringify(users)); } catch (e) {}
+          if (currentUser) {
+            const updatedMe = cloudUsers.find(u =>
+              (u.phone && currentUser.phone && String(u.phone).slice(-10) === String(currentUser.phone).slice(-10)) ||
+              (u.username && currentUser.username && u.username.toLowerCase() === currentUser.username.toLowerCase())
+            );
+            if (updatedMe) {
+              const banCheck = checkUserBanState(updatedMe);
+              if (banCheck.banned) {
+                showToast(banCheck.message);
+                handleLogout();
+                return;
+              }
+              const oldBal = Number(currentUser.balance || 0);
+              const newBal = Number(updatedMe.balance || 0);
+              const oldWon = Number(currentUser.winnings || 0);
+              const newWon = Number(updatedMe.winnings || 0);
+
+              // Preserve locally joined matches while updating balance/winnings
+              const existingJoined = currentUser.joinedMatches || [];
+              currentUser = updatedMe;
+              existingJoined.forEach(ej => {
+                if (ej && ej.id && !currentUser.joinedMatches.some(cj => String(cj.id) === String(ej.id))) {
+                  currentUser.joinedMatches.push(ej);
+                }
+              });
+
+              if (newWon > oldWon) {
+                const prizeDiff = newWon - oldWon;
+                sendAppNotification("Congratulations Winner! 🏆", `You won ₹${prizeDiff}! Added to your wallet.`);
+              } else if (newBal > oldBal && document.getElementById('qrPaymentFullPage').classList.contains('open')) {
+                clearInterval(qrTimerInterval);
+                closeQrPaymentPage();
+                const diff = newBal - oldBal;
+                sendAppNotification("Deposit Approved! ✓", `₹${diff} has been credited to your wallet.`);
+                document.getElementById('popupTitle').textContent = "Deposit Approved!";
+                document.getElementById('popupDesc').textContent = `Your deposit of ₹${diff} has been added to your wallet!`;
+                document.getElementById('statusPopupModal').classList.add('show');
+              }
+            }
+          }
+        }
+      }
+
+      // 5. Sync Current User's Joined Matches with Live MatchesDB & Refresh UI
+      if (currentUser) {
+        syncCurrentUserJoinedMatchesWithLiveDB();
+        refreshUserStatsUI();
+        renderMyMatches();
+      }
+      renderLeaderboard();
+
+      if (activeCategoryName && document.getElementById('categoryFullPage').classList.contains('open')) {
+        openCategoryPage(activeCategoryName);
+      }
+      if (activeMatchId && document.getElementById('matchDetailsFullPage').classList.contains('open')) {
+        openMatchDetailsPage(activeMatchId);
+      }
+    }
+
+    function startFirebaseCloudSync() {
+      if (db) {
+        db.ref('ff_arena').on('value', snap => {
+          const val = snap.val();
+          if (val) applyCloudSnapshot(val);
+        });
+      }
+      function fetchFreshCloudData() {
+        if (Date.now() < localWriteLockUntil) return;
+        fetch(`${FB_DB_URL}/ff_arena.json?nocache=${Date.now()}`, { cache: 'no-store' })
+          .then(r => r.json())
+          .then(d => { if (d) applyCloudSnapshot(d); })
+          .catch(() => {});
+      }
+      fetchFreshCloudData();
+      setInterval(fetchFreshCloudData, 2000);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toastBox');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function switchAuthTab(mode) {
+      const isLogin = mode === 'login';
+      document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+      document.getElementById('tabLoginBtn').classList.toggle('active', isLogin);
+      document.getElementById('tabRegBtn').classList.toggle('active', !isLogin);
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      loadUsersFromStorage();
+      const firstName = document.getElementById('regFirstName').value.trim();
+      const lastName = document.getElementById('regLastName').value.trim();
+      const username = document.getElementById('regUsername').value.trim().replace(/^@/, '');
+      const phoneDigits = document.getElementById('regPhone').value.replace(/\D/g, '').slice(-10);
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const referral = document.getElementById('regReferral').value.trim();
+      const password = document.getElementById('regPassword').value.trim();
+
+      if (!firstName || !lastName || !username) { showToast("Please fill Name and Username!"); return; }
+      if (phoneDigits.length !== 10) { showToast("Enter a valid 10-digit Phone Number!"); return; }
+      if (!email || !email.includes('@')) { showToast("Enter a valid Email Address!"); return; }
+      if (password.length < 6) { showToast("Password must be at least 6 characters!"); return; }
+
+      if (users.find(u => u.phone && u.phone.replace(/\D/g, '').slice(-10) === phoneDigits)) {
+        showToast("Phone number already registered! Please Login."); switchAuthTab('login'); return;
+      }
+      if (users.find(u => u.email && u.email.toLowerCase() === email)) {
+        showToast("Email already registered! Please Login."); switchAuthTab('login'); return;
+      }
+      if (users.find(u => u.username && u.username.toLowerCase() === username.toLowerCase())) {
+        showToast("Username already taken!"); return;
+      }
+
+      const newUser = {
+        firstName, lastName, name: `${firstName} ${lastName}`, username, phone: phoneDigits,
+        email, referral: referral || "NONE", password, balance: 0, kills: 0, winnings: 0,
+        updatedAt: Date.now(), isBanned: false, isBlocked: false, isLoggedIn: true, joinedMatches: [], transactions: []
+      };
+
+      users.push(newUser);
+      currentUser = newUser;
+      saveUsersToStorage();
+      document.documentElement.classList.add('user-authenticated');
+      showToast("Account Registered Successfully!");
+      initAppForUser();
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      loadUsersFromStorage();
+      const rawId = document.getElementById('loginIdentifier').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      if (!rawId || !pass) { showToast("Please enter Login Credentials!"); return; }
+
+      const idLower = rawId.toLowerCase();
+      const cleanUser = idLower.replace(/^@/, '');
+      const idDigits = rawId.replace(/\D/g, '').slice(-10);
+
+      function findUser() {
+        return users.find(u => {
+          const uName = (u.username || '').trim().toLowerCase().replace(/^@/, '');
+          const uEmail = (u.email || '').trim().toLowerCase();
+          const uPhone = (u.phone || '').replace(/\D/g, '').slice(-10);
+          return (uName && uName === cleanUser) || (uEmail && uEmail === idLower) || (uPhone && idDigits.length === 10 && uPhone === idDigits);
+        });
+      }
+
+      let matched = findUser();
+      if (!matched) {
+        fetch(`${FB_DB_URL}/ff_arena/users.json?nocache=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).then(c => {
+          if (c) users = normalizeUsersArray(c);
+          matched = findUser();
+          if (!matched) { showToast("Account not found! Please Register."); return; }
+          finishLogin(matched, pass);
+        }).catch(() => showToast("Account not found!"));
+        return;
+      }
+      finishLogin(matched, pass);
+    }
+
+    function finishLogin(u, pass) {
+      const banCheck = checkUserBanState(u);
+      if (banCheck.banned) {
+        showToast(banCheck.message);
+        return;
+      }
+      if (String(u.password).trim() !== pass) { showToast("Incorrect Password!"); return; }
+      u.isLoggedIn = true;
+      currentUser = u;
+      syncCurrentUserJoinedMatchesWithLiveDB();
+      try { localStorage.setItem('ff_arena_active_session', JSON.stringify(currentUser)); } catch (e) {}
+      document.documentElement.classList.add('user-authenticated');
+      showToast("Welcome back, " + (u.name || u.username) + "!");
+      initAppForUser();
+    }
+
+    function handleLogout() {
+      if (currentUser) { currentUser.isLoggedIn = false; }
+      localStorage.removeItem('ff_arena_active_session');
+      currentUser = null;
+      document.documentElement.classList.remove('user-authenticated');
+      document.getElementById('authScreen').style.display = 'flex';
+      showToast("Logged out successfully.");
+    }
+
+    function getSavedAvatar(user) {
+      if (!user) return DEFAULT_AVATAR;
+      try {
+        const s = localStorage.getItem('ff_avatar_' + user.phone);
+        if (s) return s;
+      } catch (e) {}
+      return user.avatar || DEFAULT_AVATAR;
+    }
+
+    function triggerGalleryPicker() { document.getElementById('galleryInput').click(); }
+    document.getElementById('galleryInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = 180; canvas.height = 180;
+          const ctx = canvas.getContext('2d');
+          const m = Math.min(img.width, img.height);
+          ctx.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, 180, 180);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          if (currentUser) {
+            try { localStorage.setItem('ff_avatar_' + currentUser.phone, dataUrl); } catch (err) {}
+            updateAvatarUI(dataUrl);
+            showToast("Profile Logo Saved!");
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function updateAvatarUI(src) {
+      const finalSrc = src || DEFAULT_AVATAR;
+      document.getElementById('headerAvatarImg').src = finalSrc;
+      document.getElementById('profileAvatarImg').src = finalSrc;
+    }
+
+    let currentSlide = 0;
+    function goToSlide(index) {
+      currentSlide = index;
+      document.getElementById('bannerTrack').style.transform = `translateX(-${currentSlide * 20}%)`;
+      document.querySelectorAll('#sliderDots .dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+    }
+    setInterval(() => { currentSlide = (currentSlide + 1) % 5; goToSlide(currentSlide); }, 3400);
+
+    function renderCategories() {
+      const grid = document.getElementById('categoryGrid');
+      if (!grid) return;
+      if (!isServerCurrentlyOnline()) {
+        grid.innerHTML = '';
+        return;
+      }
+      const activeCats = getActiveCategoriesList();
+      grid.innerHTML = activeCats.map((cat, idx) => {
+        const customImg = adminLiveSettings.customCards && adminLiveSettings.customCards[cat.name];
+        const artHtml = customImg
+          ? `<img src="${customImg}" class="char-svg" alt="${cat.name}">`
+          : getCharacterSvg(idx);
+        return `
+          <div class="esports-card" onclick="openCategoryPage('${cat.name}')">
+            <div class="esports-card-art">
+              <div class="card-corner-crest"><i class="fa-solid fa-crown"></i></div>
+              ${artHtml}
+              <div class="art-Slant-Banner">
+                <div class="slant-text"><span class="t-yellow">${cat.p1 || 'BR'}</span> <span class="t-white">${cat.p2 || 'MATCH'}</span></div>
+              </div>
+            </div>
+            <div class="esports-card-footer"><span>${cat.name.toUpperCase()}</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getMatchesForCategory(categoryName) {
+      if (!isServerCurrentlyOnline()) return [];
+      const rawList = matchesDB[categoryName];
+      const list = Array.isArray(rawList) ? rawList.filter(Boolean) : Object.values(rawList || {}).filter(Boolean);
+      list.forEach(m => syncMatchLifecycleStatus(m));
+      matchesDB[categoryName] = list;
+      return list;
+    }
+
+    function openCategoryPage(categoryName) {
+      if (!isServerCurrentlyOnline()) {
+        showToast(adminLiveSettings.maintenanceReason || "Matches are currently paused!");
+        return;
+      }
+      activeCategoryName = categoryName;
+      document.getElementById('catPageTitle').textContent = categoryName.toUpperCase() + " MATCHES";
+      const matches = getMatchesForCategory(categoryName);
+      const container = document.getElementById('categoryMatchesContainer');
+
+      if (matches.length === 0) {
+        container.innerHTML = `<div class="details-card-box" style="text-align:center; padding:32px 16px;"><i class="fa-solid fa-gamepad" style="font-size:36px; color:var(--primary-dark); margin-bottom:10px;"></i><h4>No Matches Available Yet</h4><p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Admin will publish new matches in ${categoryName} soon!</p></div>`;
+        document.getElementById('categoryFullPage').classList.add('open');
+        return;
+      }
+
+      container.innerHTML = matches.map(m => {
+        syncMatchLifecycleStatus(m);
+        const filled = m.participants ? m.participants.length : 0;
+        const left = Math.max(0, m.total - filled);
+        const pct = Math.min(100, Math.round((filled / m.total) * 100));
+        const joinedEntry = isUserJoinedInMatch(m);
+        const badgeHtml = m.bannerImage ? `<img src="${m.bannerImage}" alt="M">` : `<i class="fa-solid fa-trophy"></i>`;
+        let btnHtml = '';
+        if (m.status === 'Completed') {
+          btnHtml = `<button class="btn-result" onclick="event.stopPropagation(); openMatchDetailsPage('${m.id}', 'result')"><i class="fa-solid fa-medal"></i> MATCH RESULT</button>`;
+        } else if (joinedEntry) {
+          btnHtml = `<button class="btn-join joined" onclick="event.stopPropagation(); openMatchDetailsPage('${m.id}', 'rules')">JOINED (SLOT #${joinedEntry.slot || 1}) ✓</button>`;
+        } else if (left === 0) {
+          btnHtml = `<button class="btn-join joined" onclick="event.stopPropagation(); showToast('All Slots Full!')">FULL (${m.total}/${m.total})</button>`;
+        } else {
+          btnHtml = `<button class="btn-join" onclick="event.stopPropagation(); openSlotSelectionPage('${m.id}')">JOIN ₹${m.entry}</button>`;
+        }
+        return `
+          <div class="match-card" onclick="openMatchDetailsPage('${m.id}', '${m.status === 'Completed' ? 'result' : 'rules'}')">
+            <div class="match-top">
+              <div class="match-title-wrap">
+                <div class="match-badge-icon">${badgeHtml}</div>
+                <div><h4>${m.title}</h4><span><i class="fa-regular fa-clock"></i> ${m.time} • Tap for Details</span></div>
+              </div>
+              <span class="match-id-tag">${m.status}</span>
+            </div>
+            <div class="match-stats">
+              <div class="stat-box"><span>Prize Pool</span><strong>₹${m.prize}</strong></div>
+              <div class="stat-box"><span>Per Kill</span><strong>₹${m.perKill}</strong></div>
+              <div class="stat-box"><span>Entry Fee</span><strong>₹${m.entry}</strong></div>
+            </div>
+            <div class="match-progress-wrap">
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+              <div class="progress-labels"><span>${left > 0 ? `Only ${left} Slots Left` : 'All Slots Booked'}</span><span>${filled}/${m.total} Slots</span></div>
+            </div>
+            <div class="match-bottom">
+              <span class="map-pill"><i class="fa-solid fa-location-dot"></i> ${m.map}</span>
+              <div>${btnHtml}</div>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('categoryFullPage').classList.add('open');
+    }
+
+    function closeCategoryPage() { document.getElementById('categoryFullPage').classList.remove('open'); }
+
+    function openSlotSelectionPage(matchId) {
+      if (!isServerCurrentlyOnline()) { showToast(adminLiveSettings.maintenanceReason || "Matches paused!"); return; }
+      if (!currentUser) return;
+      const m = findMatchById(matchId);
+      if (!m) return;
+      if (isUserJoinedInMatch(m)) { showToast("You have already joined this match!"); return; }
+      const userBal = Number(currentUser.balance || 0);
+      const entryFee = Number(m.entry || 0);
+      if (userBal < entryFee) {
+        showToast("Insufficient Balance! Please Deposit Minimum ₹15.");
+        closeCategoryPage();
+        openDepositPage();
+        return;
+      }
+      activeMatchId = matchId;
+      chosenSlotNumber = null;
+      document.getElementById('slotPageTitle').textContent = `SELECT SLOT (${m.category.toUpperCase()})`;
+      document.getElementById('slotMatchTitleDisplay').textContent = m.title;
+      document.getElementById('slotMatchLimitDisplay').textContent = `Max ${m.total} Slots`;
+      document.getElementById('slotEntryFeeDisplay').textContent = entryFee;
+      document.getElementById('slotStepOneBox').style.display = 'block';
+      document.getElementById('slotStepTwoBox').style.display = 'none';
+      renderSlotBoxes(m);
+      document.getElementById('slotSelectionFullPage').classList.add('open');
+    }
+
+    function renderSlotBoxes(m) {
+      const grid = document.getElementById('slotsGridContainer');
+      grid.className = m.total === 2 ? 'slots-grid-container two-slots' : 'slots-grid-container';
+      let html = '';
+      for (let s = 1; s <= m.total; s++) {
+        const booked = (m.participants || []).find(p => Number(p.slot) === s);
+        const isSel = chosenSlotNumber === s;
+        if (booked) {
+          html += `<div class="slot-item-box booked" onclick="showToast('Slot #${s} is already booked!')"><strong>Slot #${s}</strong><span>Booked</span></div>`;
+        } else {
+          html += `<div class="slot-item-box ${isSel ? 'selected' : ''}" onclick="selectSlotNumber(${s})"><strong>Slot #${s}</strong><span>${isSel ? 'Selected ✓' : 'Available'}</span></div>`;
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    function selectSlotNumber(s) {
+      const m = findMatchById(activeMatchId);
+      if (!m) return;
+      chosenSlotNumber = s;
+      renderSlotBoxes(m);
+    }
+
+    function proceedToGameNameStep() {
+      if (!chosenSlotNumber) { showToast("Please select an available Slot first!"); return; }
+      document.getElementById('chosenSlotNumBadge').textContent = chosenSlotNumber;
+      document.getElementById('joinGameNameInput').value = currentUser.username || currentUser.firstName || '';
+      document.getElementById('joinGameUidInput').value = '';
+      document.getElementById('slotStepOneBox').style.display = 'none';
+      document.getElementById('slotStepTwoBox').style.display = 'block';
+    }
+
+    function backToSlotStepOne() {
+      document.getElementById('slotStepTwoBox').style.display = 'none';
+      document.getElementById('slotStepOneBox').style.display = 'block';
+    }
+
+    // JOIN MATCH -> INSTANTLY MOVES TO UPCOMING (OR ONGOING IF ROOM ID ALREADY SET)
+    function confirmFinalMatchJoin() {
+      if (!isServerCurrentlyOnline()) { showToast("Matches are currently paused!"); return; }
+      if (!currentUser || !activeMatchId || !chosenSlotNumber) return;
+      const m = findMatchById(activeMatchId);
+      if (!m) return;
+      const gameName = document.getElementById('joinGameNameInput').value.trim();
+      const gameUid = document.getElementById('joinGameUidInput').value.trim();
+      if (!gameName) { showToast("Please enter your In-Game Name!"); return; }
+
+      const userBal = Number(currentUser.balance || 0);
+      const entryFee = Number(m.entry || 0);
+      if (userBal < entryFee) {
+        showToast("Insufficient Balance! Please Deposit.");
+        closeSlotSelectionPage();
+        openDepositPage();
+        return;
+      }
+
+      if (!m.participants) m.participants = [];
+      if (m.participants.some(p => Number(p.slot) === chosenSlotNumber)) {
+        showToast("Slot already taken! Choose another slot.");
+        backToSlotStepOne();
+        renderSlotBoxes(m);
+        return;
+      }
+
+      localWriteLockUntil = Date.now() + 6500;
+      currentUser.balance = userBal - entryFee;
+      currentUser.updatedAt = Date.now();
+
+      m.participants.push({
+        slot: chosenSlotNumber,
+        gameName,
+        gameUid: gameUid || "N/A",
+        phone: currentUser.phone,
+        kills: 0,
+        prizeWon: 0
+      });
+      m.participants.sort((a, b) => a.slot - b.slot);
+      syncMatchLifecycleStatus(m);
+
+      if (!Array.isArray(currentUser.joinedMatches)) currentUser.joinedMatches = [];
+      const joinedObj = {
+        id: m.id,
+        category: m.category,
+        title: m.title,
+        time: m.time,
+        prize: m.prize,
+        entry: entryFee,
+        map: m.map,
+        status: m.status || 'Upcoming',
+        roomId: m.roomId || '',
+        roomPass: m.roomPass || '',
+        slot: chosenSlotNumber,
+        gameName,
+        gameUid: gameUid || "N/A"
+      };
+      currentUser.joinedMatches.push(joinedObj);
+
+      const stateKey = 'ff_match_state_' + currentUser.phone + '_' + m.id;
+      localStorage.setItem(stateKey, joinedObj.status);
+      saveLocalJoinedBackup(currentUser, currentUser.joinedMatches);
+
+      if (!Array.isArray(currentUser.transactions)) currentUser.transactions = [];
+      currentUser.transactions.unshift({
+        id: "JOIN-" + Date.now(),
+        title: `Joined ${m.title} (Slot #${chosenSlotNumber})`,
+        date: "Just Now",
+        amount: entryFee,
+        type: "debit"
+      });
+
+      syncUserRecord();
+      saveMatchesToStorage();
+      refreshUserStatsUI();
+
+      closeSlotSelectionPage();
+      closeCategoryPage();
+
+      // Switch directly to My Matches -> Upcoming (or Ongoing if roomId is already set)
+      currentMyMatchesTab = joinedObj.status;
+      document.querySelectorAll('#viewMyMatches .sub-tab').forEach(t => t.classList.remove('active'));
+      const targetSubTab = document.getElementById('subTab' + currentMyMatchesTab) || document.getElementById('subTabUpcoming');
+      if (targetSubTab) targetSubTab.classList.add('active');
+
+      switchMainTab('MyMatches', document.getElementById('navBtnMyMatches'));
+      renderMyMatches();
+      showToast(`Joined Slot #${chosenSlotNumber}! Added to ${currentMyMatchesTab} Matches.`);
+    }
+
+    function closeSlotSelectionPage() { document.getElementById('slotSelectionFullPage').classList.remove('open'); }
+
+    function copyCredentialText(elId, label) {
+      const txt = document.getElementById(elId).textContent;
+      if (!txt || txt === 'Waiting...') return;
+      if (navigator.clipboard) navigator.clipboard.writeText(txt);
+      showToast(`${label} Copied! ✓`);
+    }
+
+    function openMatchDetailsPage(matchId, initialTab) {
+      const m = findMatchById(matchId);
+      if (!m) return;
+      activeMatchId = matchId;
+      syncMatchLifecycleStatus(m);
+
+      document.getElementById('detailsPageHeader').textContent = m.category.toUpperCase();
+      document.getElementById('detailMatchTitle').textContent = m.title;
+      document.getElementById('detailMatchTime').textContent = `${m.time} • Map: ${m.map}`;
+      document.getElementById('detailMatchStatusBadge').textContent = m.status;
+      document.getElementById('detailsRulesContent').textContent = m.rules || "1. Sit strictly in your booked slot.\n2. No Emulator or Hacks allowed.";
+
+      const pList = m.participants || [];
+      const joined = isUserJoinedInMatch(m);
+      const rId = m.roomId ? String(m.roomId).trim() : '';
+      const rPass = m.roomPass ? String(m.roomPass).trim() : '';
+      const hasRoomSet = Boolean(rId !== '' || rPass !== '');
+
+      const roomBox = document.getElementById('joinedRoomCredentialsBox');
+      if (hasRoomSet) {
+        roomBox.style.display = 'block';
+        document.getElementById('displayRoomIdText').textContent = rId || 'Waiting...';
+        document.getElementById('displayRoomPassText').textContent = rPass || 'Waiting...';
+      } else {
+        roomBox.style.display = 'none';
+      }
+
+      document.getElementById('joinedCountNum').textContent = pList.length;
+      document.getElementById('maxCountNum').textContent = m.total;
+      document.getElementById('detailsParticipantsList').innerHTML = pList.length === 0
+        ? `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:16px 0;">No participants joined yet.</p>`
+        : pList.map(p => `<div class="participant-item"><div class="participant-left"><span class="slot-badge">Slot #${p.slot}</span><div><strong style="font-size:13px; display:block;">${p.gameName}</strong><span style="font-size:10.5px; color:var(--text-muted);">UID: ${p.gameUid}</span></div></div><span style="font-size:11px; font-weight:700; color:#2E7D32;">Joined ✓</span></div>`).join('');
+
+      const resContainer = document.getElementById('detailsResultList');
+      if (m.status !== 'Completed') {
+        resContainer.innerHTML = `<div style="text-align:center; padding:22px 10px;"><i class="fa-solid fa-hourglass-half" style="font-size:32px; color:var(--primary-dark); margin-bottom:8px;"></i><h5 style="font-size:14px; font-weight:800;">Match Result Pending</h5><p style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Current Status: <strong>${m.status}</strong>. Winner results will be displayed here once Admin declares the winner.</p></div>`;
+      } else {
+        const sorted = [...pList].sort((a, b) => Number(b.prizeWon || 0) - Number(a.prizeWon || 0));
+        resContainer.innerHTML = sorted.length === 0
+          ? `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:16px 0;">Match Completed.</p>`
+          : sorted.map((p, idx) => `<div class="participant-item"><div class="participant-left"><span class="slot-badge">${Number(p.prizeWon || 0) > 0 ? '🏆 Winner' : '#' + (idx + 1)}</span><div><strong style="font-size:13px; display:block;">${p.gameName} (Slot #${p.slot})</strong><span style="font-size:10.5px; color:var(--text-muted);">UID: ${p.gameUid}</span></div></div><strong style="font-size:14px; color:#2E7D32;">Won ₹${p.prizeWon || 0}</strong></div>`).join('');
+      }
+
+      const bottomWrap = document.getElementById('detailsBottomActionWrap');
+      if (!isServerCurrentlyOnline()) {
+        bottomWrap.innerHTML = `<button class="btn-primary" style="background:#E8E8E8; border-color:#CCC;">MATCHES PAUSED</button>`;
+      } else if (m.status === 'Completed') {
+        bottomWrap.innerHTML = '';
+      } else if (joined) {
+        bottomWrap.innerHTML = `<button class="btn-primary" style="background:#E8E8E8; border-color:#CCC;">ALREADY JOINED (SLOT #${joined.slot || 1}) ✓</button>`;
+      } else if (pList.length >= m.total) {
+        bottomWrap.innerHTML = `<button class="btn-primary" style="background:#E8E8E8; border-color:#CCC;">FULL (${m.total}/${m.total})</button>`;
+      } else {
+        bottomWrap.innerHTML = `<button class="btn-primary" onclick="closeMatchDetailsPage(); openSlotSelectionPage('${m.id}')"><i class="fa-solid fa-gamepad"></i> JOIN MATCH (₹${m.entry})</button>`;
+      }
+
+      if (initialTab) switchDetailsSubTab(initialTab);
+      document.getElementById('matchDetailsFullPage').classList.add('open');
+    }
+
+    function switchDetailsSubTab(tabKey) {
+      document.getElementById('dTabRules').classList.toggle('active', tabKey === 'rules');
+      document.getElementById('dTabParticipants').classList.toggle('active', tabKey === 'participants');
+      document.getElementById('dTabResult').classList.toggle('active', tabKey === 'result');
+      document.getElementById('detailsRulesSection').style.display = tabKey === 'rules' ? 'block' : 'none';
+      document.getElementById('detailsParticipantsSection').style.display = tabKey === 'participants' ? 'block' : 'none';
+      document.getElementById('detailsResultSection').style.display = tabKey === 'result' ? 'block' : 'none';
+    }
+
+    function closeMatchDetailsPage() { document.getElementById('matchDetailsFullPage').classList.remove('open'); }
+
+    function switchMatchSubTab(tabName, el) {
+      currentMyMatchesTab = tabName;
+      document.querySelectorAll('#viewMyMatches .sub-tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderMyMatches();
+    }
+
+    function renderMyMatches() {
+      const container = document.getElementById('myMatchesList');
+      if (!currentUser || !container) return;
+
+      if (!isServerCurrentlyOnline()) {
+        const reasonStr = adminLiveSettings.maintenanceReason || "Server is under maintenance. Please check back soon!";
+        container.innerHTML = `<div class="server-offline-box"><i class="fa-solid fa-triangle-exclamation"></i><h4>SERVER / MATCHES PAUSED</h4><div class="reason-badge">${reasonStr}</div></div>`;
+        return;
+      }
+
+      syncCurrentUserJoinedMatchesWithLiveDB();
+
+      const filtered = (currentUser.joinedMatches || []).filter(m => m.status === currentMyMatchesTab);
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:45px 20px; background:var(--white); border-radius:18px; border:1.5px dashed var(--primary);"><i class="fa-solid fa-gamepad" style="font-size:42px; color:var(--primary-dark); margin-bottom:10px;"></i><h4 style="font-size:15px; font-weight:700;">No ${currentMyMatchesTab} Matches</h4><p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Check the other tabs above or join a tournament from Home!</p></div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => {
+        const live = findMatchById(m.id) || m;
+        syncMatchLifecycleStatus(live);
+        const rId = live.roomId ? String(live.roomId).trim() : '';
+        const rPass = live.roomPass ? String(live.roomPass).trim() : '';
+        const hasRoom = Boolean(rId !== '' || rPass !== '');
+
+        return `
+          <div class="match-card" onclick="openMatchDetailsPage('${live.id}', '${live.status === 'Completed' ? 'result' : 'rules'}')">
+            <div class="match-top">
+              <div class="match-title-wrap">
+                <div class="match-badge-icon"><i class="fa-solid fa-trophy"></i></div>
+                <div><h4>${live.title}</h4><span>Slot #${m.slot || 1} • ${live.time}</span></div>
+              </div>
+              <span class="match-id-tag">${live.status}</span>
+            </div>
+            <div class="match-stats">
+              <div class="stat-box"><span>Prize Pool</span><strong>₹${live.prize}</strong></div>
+              <div class="stat-box"><span>Your Slot</span><strong>Slot #${m.slot || 1}</strong></div>
+              <div class="stat-box"><span>Map</span><strong>${live.map}</strong></div>
+            </div>
+            ${hasRoom ? `
+              <div class="copy-bar-row" style="margin-top:6px;" onclick="event.stopPropagation(); if(navigator.clipboard) navigator.clipboard.writeText('${rId}'); showToast('Room ID Copied! ✓')">
+                <div><span>ROOM ID:</span><strong>${rId || 'Waiting...'}</strong></div>
+                <div class="copy-pill-btn"><i class="fa-regular fa-copy"></i> COPY</div>
+              </div>
+              <div class="copy-bar-row" onclick="event.stopPropagation(); if(navigator.clipboard) navigator.clipboard.writeText('${rPass}'); showToast('Password Copied! ✓')">
+                <div><span>PASSWORD:</span><strong>${rPass || 'Waiting...'}</strong></div>
+                <div class="copy-pill-btn"><i class="fa-regular fa-copy"></i> COPY</div>
+              </div>
+            ` : ''}
+            ${live.status === 'Completed' ? `<button class="btn-result" style="width:100%; margin-top:6px;" onclick="event.stopPropagation(); openMatchDetailsPage('${live.id}', 'result')"><i class="fa-solid fa-ranking-star"></i> VIEW RESULT & WINNER</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderDepositChips() {
+      document.getElementById('depositChipsGrid').innerHTML = DEPOSIT_SHORTCUTS.map(amt => `<div class="amount-chip ${amt === 15 ? 'active' : ''}" onclick="selectDepositChip(${amt}, this)">₹${amt}</div>`).join('');
+    }
+
+    function selectDepositChip(amt, el) {
+      document.getElementById('depositAmountInput').value = amt;
+      document.querySelectorAll('#depositChipsGrid .amount-chip').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+    }
+
+    function openDepositPage() {
+      if (!isServerCurrentlyOnline()) {
+        showToast(adminLiveSettings.maintenanceReason || "Deposits are paused while server is offline!");
+        return;
+      }
+      document.getElementById('depositFullPage').classList.add('open');
+    }
+    function closeDepositPage() { document.getElementById('depositFullPage').classList.remove('open'); }
+
+    // MINIMUM DEPOSIT ₹15 VALIDATION
+    function startDepositGeneration() {
+      if (!isServerCurrentlyOnline()) { showToast("Server is currently offline!"); return; }
+      const amt = parseInt(document.getElementById('depositAmountInput').value, 10);
+      if (!amt || amt < 15) {
+        showToast("Minimum Deposit amount is ₹15!");
+        return;
+      }
+      document.getElementById('depositFullPage').classList.remove('open');
+      const modal = document.getElementById('generatingModal');
+      modal.classList.add('show');
+      setTimeout(() => {
+        modal.classList.remove('show');
+        document.getElementById('genPayAmount').textContent = amt;
+        document.getElementById('adminCodeText').textContent = adminLiveSettings.upiId || "ADMIN-FF-9842@UPI";
+        if (adminLiveSettings.qrImage) {
+          document.getElementById('userQrBoxFrame').innerHTML = `<img src="${adminLiveSettings.qrImage}" alt="QR">`;
+        }
+        pendingDepositRecorded = false;
+        document.getElementById('iHavePaidBtn').style.display = 'flex';
+        document.getElementById('waitingAdminBox').style.display = 'none';
+        document.getElementById('qrPaymentFullPage').classList.add('open');
+        startSevenMinuteTimer();
+      }, 1200);
+    }
+
+    function handleUserClickedPaid() {
+      const amt = parseInt(document.getElementById('depositAmountInput').value, 10) || 15;
+      document.getElementById('iHavePaidBtn').style.display = 'none';
+      document.getElementById('waitingAdminBox').style.display = 'flex';
+      if (!pendingDepositRecorded && currentUser) {
+        pendingDepositRecorded = true;
+        if (!currentUser.transactions) currentUser.transactions = [];
+        currentUser.transactions.unshift({ id: "DEP-" + Date.now(), title: "Deposit Request (Waiting Admin)", date: "Pending", amount: amt, type: "pending" });
+        syncUserRecord();
+        refreshUserStatsUI();
+      }
+      showToast("Deposit Request Sent to Admin!");
+    }
+
+    function startSevenMinuteTimer() {
+      clearInterval(qrTimerInterval);
+      let rem = 7 * 60;
+      const timerEl = document.getElementById('qrCountdownText');
+      function upd() { timerEl.textContent = `${String(Math.floor(rem / 60)).padStart(2, '0')}:${String(rem % 60).padStart(2, '0')}`; }
+      upd();
+      qrTimerInterval = setInterval(() => {
+        rem--;
+        if (rem < 0) { clearInterval(qrTimerInterval); closeQrPaymentPage(); showToast("Payment Session Expired!"); return; }
+        upd();
+      }, 1000);
+    }
+
+    function closeQrPaymentPage() { clearInterval(qrTimerInterval); document.getElementById('qrPaymentFullPage').classList.remove('open'); }
+    function copyAdminCode() {
+      const code = document.getElementById('adminCodeText').textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(code);
+      showToast("UPI ID Copied! ✓");
+    }
+
+    function openWithdrawPage() {
+      if (!isServerCurrentlyOnline()) { showToast(adminLiveSettings.maintenanceReason || "Withdrawals paused!"); return; }
+      document.getElementById('withdrawAvailBal').textContent = currentUser ? currentUser.balance : 0;
+      document.getElementById('withdrawFullPage').classList.add('open');
+    }
+    function closeWithdrawPage() { document.getElementById('withdrawFullPage').classList.remove('open'); }
+
+    function selectWithdrawMethod(method, el) {
+      selectedWithdrawMethod = method;
+      document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+      if (el) el.classList.add('selected');
+      document.getElementById('withdrawAccountLabel').textContent = method === 'PhonePe' ? "Enter PhonePe Number / UPI ID" : (method === 'Paytm' ? "Enter Paytm Number" : "Enter Bank Account & IFSC");
+    }
+
+    // MINIMUM WITHDRAWAL ₹50 VALIDATION
+    function submitWithdrawal() {
+      if (!currentUser) return;
+      const amt = parseInt(document.getElementById('withdrawAmountInput').value, 10);
+      const acc = document.getElementById('withdrawAccountInput').value.trim();
+      if (!amt || amt < 50) {
+        showToast("Minimum Withdrawal amount is ₹50!");
+        return;
+      }
+      if (amt > Number(currentUser.balance || 0)) {
+        showToast("Insufficient Wallet Balance!");
+        return;
+      }
+      if (!acc) {
+        showToast("Please enter your payout account details!");
+        return;
+      }
+      currentUser.balance = Number(currentUser.balance || 0) - amt;
+      if (!currentUser.transactions) currentUser.transactions = [];
+      currentUser.transactions.unshift({ id: "WIT-" + Date.now(), title: `Withdrawal via ${selectedWithdrawMethod} (${acc})`, date: "Pending (24h)", amount: amt, type: "debit" });
+      syncUserRecord();
+      refreshUserStatsUI();
+      closeWithdrawPage();
+      document.getElementById('popupTitle').textContent = "Withdrawal Submitted!";
+      document.getElementById('popupDesc').textContent = `Your withdrawal request of ₹${amt} has been submitted and will be processed within 24 hours.`;
+      document.getElementById('statusPopupModal').classList.add('show');
+    }
+
+    function closeStatusPopup() { document.getElementById('statusPopupModal').classList.remove('show'); }
+
+    function renderLeaderboard() {
+      const realSorted = [...users].sort((a, b) => Number(b.winnings || 0) - Number(a.winnings || 0));
+      const podiumEl = document.getElementById('podiumContainer');
+      const listEl = document.getElementById('leaderList');
+      if (!podiumEl || !listEl) return;
+
+      const p1 = realSorted[0] || { username: "Open", winnings: 0 };
+      const p2 = realSorted[1] || { username: "Open", winnings: 0 };
+      const p3 = realSorted[2] || { username: "Open", winnings: 0 };
+
+      podiumEl.innerHTML = `
+        <div class="podium-item"><div class="podium-avatar">${(p2.username || '2').charAt(0).toUpperCase()}</div><h5>${p2.username || p2.name}</h5><span>₹${p2.winnings || 0}</span></div>
+        <div class="podium-item rank-1"><div class="crown-icon"><i class="fa-solid fa-crown"></i></div><div class="podium-avatar">${(p1.username || '1').charAt(0).toUpperCase()}</div><h5>${p1.username || p1.name}</h5><span>₹${p1.winnings || 0}</span></div>
+        <div class="podium-item"><div class="podium-avatar">${(p3.username || '3').charAt(0).toUpperCase()}</div><h5>${p3.username || p3.name}</h5><span>₹${p3.winnings || 0}</span></div>
+      `;
+
+      if (realSorted.length === 0) {
+        listEl.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:18px;">No players ranked yet.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = realSorted.map((u, i) => `
+        <div class="leader-row">
+          <div class="leader-left"><div class="rank-num">#${i + 1}</div><div><h5 style="font-size:13.5px; font-weight:700;">${u.name || u.username}</h5><span style="font-size:11px; color:var(--text-muted);">${u.kills || 0} Kills</span></div></div>
+          <strong style="color:var(--primary-dark); font-size:14px;">₹${u.winnings || 0}</strong>
+        </div>
+      `).join('');
+    }
+
+    function renderTransactions() {
+      if (!currentUser) return;
+      const list = document.getElementById('txHistoryList');
+      if (!currentUser.transactions || currentUser.transactions.length === 0) {
+        list.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:24px 0;">No transactions yet.</p>`;
+        return;
+      }
+      list.innerHTML = currentUser.transactions.map(tx => {
+        const iconClass = tx.type === 'credit' ? 'fa-arrow-down' : (tx.type === 'pending' ? 'fa-clock' : 'fa-arrow-up');
+        const prefix = tx.type === 'credit' ? '+₹' : (tx.type === 'pending' ? 'PENDING ₹' : '-₹');
+        return `<div class="tx-item"><div class="tx-left"><div class="tx-icon"><i class="fa-solid ${iconClass}"></i></div><div class="tx-info"><h5>${tx.title}</h5><span>${tx.date}</span></div></div><span class="tx-amount ${tx.type}">${prefix}${tx.amount}</span></div>`;
+      }).join('');
+    }
+
+    function switchMainTab(tabId, navEl) {
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+      const tView = document.getElementById('view' + tabId);
+      if (tView) tView.classList.add('active');
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+      if (navEl) navEl.classList.add('active');
+      if (tabId === 'MyMatches') renderMyMatches();
+      if (tabId === 'Wallet') renderTransactions();
+      if (tabId === 'Leaderboard') renderLeaderboard();
+    }
+
+    function syncUserRecord() {
+      if (!currentUser) return;
+      currentUser.updatedAt = Date.now();
+      const idx = users.findIndex(u => u.phone === currentUser.phone);
+      if (idx !== -1) users[idx] = currentUser; else users.push(currentUser);
+      saveUsersToStorage();
+    }
+
+    function refreshUserStatsUI() {
+      if (!currentUser) return;
+      document.getElementById('headerWelcomeName').textContent = currentUser.name || currentUser.username;
+      document.getElementById('headerBalance').textContent = Number(currentUser.balance || 0);
+      document.getElementById('walletMainBalance').textContent = Number(currentUser.balance || 0);
+      document.getElementById('profileNameDisplay').textContent = currentUser.name || currentUser.username;
+      document.getElementById('profileUsernameDisplay').textContent = currentUser.username || currentUser.phone;
+      document.getElementById('statMatches').textContent = (currentUser.joinedMatches || []).length;
+      document.getElementById('statKills').textContent = Number(currentUser.kills || 0);
+      document.getElementById('statWon').textContent = Number(currentUser.winnings || 0);
+      updateAvatarUI(getSavedAvatar(currentUser));
+      renderTransactions();
+    }
+
+    function initAppForUser() {
+      document.documentElement.classList.add('user-authenticated');
+      const authScr = document.getElementById('authScreen');
+      if (authScr) authScr.style.display = 'none';
+      localStorage.setItem('ff_arena_notif_granted', 'true');
+      syncCurrentUserJoinedMatchesWithLiveDB();
+      refreshUserStatsUI();
+      applyServerAndVisualSettings();
+      renderDepositChips();
+      renderLeaderboard();
+      renderMyMatches();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedSettings = JSON.parse(localStorage.getItem('ff_arena_admin_settings') || 'null');
+        if (savedSettings) adminLiveSettings = { ...adminLiveSettings, ...savedSettings };
+      } catch (e) {}
+
+      Object.keys(matchesDB).forEach(cat => {
+        (matchesDB[cat] || []).forEach(m => syncMatchLifecycleStatus(m));
+      });
+
+      applyServerAndVisualSettings();
+      renderDepositChips();
+      loadUsersFromStorage();
+      renderLeaderboard();
+      startFirebaseCloudSync();
+
+      try {
+        const savedSession = localStorage.getItem('ff_arena_active_session');
+        if (savedSession) {
+          const parsed = JSON.parse(savedSession);
+          const latestFromList = users.find(u => u.phone === parsed.phone);
+          currentUser = latestFromList || parsed;
+          const banCheck = checkUserBanState(currentUser);
+          if (banCheck.banned) {
+            showToast(banCheck.message);
+            handleLogout();
+            return;
+          }
+          initAppForUser();
+          return;
+        }
+      } catch (e) {}
+      document.documentElement.classList.remove('user-authenticated');
+      const authScr = document.getElementById('authScreen');
+      if (authScr) authScr.style.display = 'flex';
+    });
+  </script>
+</body>
+</html>
